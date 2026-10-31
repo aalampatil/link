@@ -18,6 +18,42 @@ No broken links. No "coming soon" pages. The placeholder link always works.
 
 ---
 
+## Upcoming Rollouts
+
+These features are planned and are not available yet. The rollout order may
+change; release dates have not been set.
+
+### First Rollout: Deadlines and Link Availability
+
+- [ ] **Expiry controls:** Show days remaining, warn before expiry, and allow
+      users to extend a link beyond the current 30-day validity period.
+- [ ] **Deadline reminders:** Let users set a project deadline and receive a
+      reminder if the destination is still missing.
+- [ ] **Custom holding pages:** Add a short project message and an expected
+      availability date while work is in progress.
+
+### Next Rollout: Visibility and Destination Management
+
+- [ ] **Basic analytics:** Show visit counts, the last opened time, and visits
+      received before the destination was connected.
+- [ ] **Destination history:** Record destination changes and allow users to
+      restore a previous URL.
+- [ ] **Custom link names:** Let users choose a readable slug with availability
+      checks.
+- [ ] **Scheduled publishing:** Prepare a destination privately and activate it
+      at a chosen date and time.
+- [ ] **Tags and archives:** Organize links by project or purpose and archive
+      older work without deleting it.
+
+### Later Rollout: Professional Sharing
+
+- [ ] **Password protection:** Require a password before visitors can access a
+      shared destination.
+- [ ] **QR code downloads:** Generate a downloadable QR code for a public link.
+- [ ] **Custom domains:** Share links using a domain owned by the user.
+
+---
+
 ## Tech Stack
 
 ### Server
