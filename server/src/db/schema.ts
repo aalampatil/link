@@ -4,7 +4,6 @@ import {
   varchar,
   timestamp,
   pgEnum,
-  jsonb,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -38,37 +37,4 @@ export const linksTable = pgTable("links", {
   linkValidity: timestamp("link_validity").default(
     sql`now() + interval '30 days'`,
   ),
-});
-
-export type SocialCardLink = {
-  label: string;
-  url: string;
-  type?: "social" | "project";
-  platform?: string;
-  description?: string;
-};
-
-export const socialCardsTable = pgTable("social_cards", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  ownerId: varchar("owner_id", { length: 255 }).notNull().unique(),
-  slug: varchar("slug", { length: 120 }).notNull().unique(),
-  displayName: varchar("display_name", { length: 120 }).notNull(),
-  displayNameColor: varchar("display_name_color", { length: 20 })
-    .default("#000000")
-    .notNull(),
-  bio: varchar("bio", { length: 280 }).default("").notNull(),
-  bioColor: varchar("bio_color", { length: 20 }).default("#111111").notNull(),
-  avatarUrl: varchar("avatar_url", { length: 2048 }).default("").notNull(),
-  backgroundImageUrl: varchar("background_image_url", { length: 2048 })
-    .default("")
-    .notNull(),
-  accentColor: varchar("accent_color", { length: 20 }).default("#facc00").notNull(),
-  links: jsonb("links").$type<SocialCardLink[]>().default(sql`'[]'::jsonb`).notNull(),
-  publicUrl: varchar("public_url", { length: 2048 }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
 });

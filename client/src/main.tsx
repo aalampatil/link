@@ -13,8 +13,6 @@ const ManageUrlPage = lazy(() => import("./pages/ManageUrlPage"));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const GetAllLinks = lazy(() => import("./pages/GetAllLinks"));
-const CardEditorPage = lazy(() => import("./pages/CardEditorPage"));
-const PublicCardPage = lazy(() => import("./pages/PublicCardPage"));
 
 const pageFallback = (
   <div className="flex min-h-screen items-center justify-center">
@@ -29,10 +27,6 @@ const withSuspense = (element: ReactNode) => (
 );
 
 const router = createBrowserRouter([
-  {
-    path: "c/:slug",
-    element: withSuspense(<PublicCardPage />),
-  },
   {
     element: withSuspense(<ClerkRoutes />),
     children: [
@@ -66,14 +60,6 @@ const router = createBrowserRouter([
             element: withSuspense(
               <ProtectedRoute>
                 <GetAllLinks />
-              </ProtectedRoute>,
-            ),
-          },
-          {
-            path: "card",
-            element: withSuspense(
-              <ProtectedRoute>
-                <CardEditorPage />
               </ProtectedRoute>,
             ),
           },

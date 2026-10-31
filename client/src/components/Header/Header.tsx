@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Show, UserButton, SignInButton } from '@clerk/react'
-import { IdCard, Link } from 'lucide-react';
+import { Link } from 'lucide-react';
 
 
 const Header = () => {
@@ -15,7 +15,7 @@ const Header = () => {
           </h1>
 
           <p className="border-2 border-border bg-main px-3 py-2 text-center text-sm shadow-shadow sm:text-base">
-            placeholder links and profile cards
+            deadline-safe placeholder links
           </p>
         </div>
 
@@ -28,13 +28,6 @@ const Header = () => {
               <Link size={16} />
               Links
             </button>
-            <button
-              onClick={() => navigate("/card")}
-              className="flex h-10 items-center gap-2 border-2 border-border bg-main px-3 font-heading shadow-shadow transition-transform hover:-translate-x-1 hover:-translate-y-1"
-            >
-              <IdCard size={16} />
-              Card
-            </button>
 
             <UserButton>
               <UserButton.MenuItems>
@@ -42,11 +35,6 @@ const Header = () => {
                   label="Manage Active Links"
                   labelIcon={<Link size={15} />}
                   onClick={() => navigate("/get-all")}
-                />
-                <UserButton.Action
-                  label="Social Card"
-                  labelIcon={<IdCard size={15} />}
-                  onClick={() => navigate("/card")}
                 />
               </UserButton.MenuItems>
             </UserButton>

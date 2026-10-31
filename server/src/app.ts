@@ -1,16 +1,12 @@
 import express from "express";
 import linkRouter from "./modules/link/link.routes.js";
-import cardRouter from "./modules/card/card.routes.js";
 import { publicLink } from "./modules/link/link.controller.js";
-import { getPublicCard } from "./modules/card/card.controller.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import { clerkMiddleware } from "@clerk/express";
 import type { ErrorRequestHandler, Response } from "express";
 import ApiError from "./utils/api-error.js";
 import { env } from "./env.js";
-
-// http://localhost:5000/api/user/profile
 
 function createApp() {
   const app = express();
@@ -54,11 +50,9 @@ function createApp() {
   });
 
   app.get("/api/link/public/:slug", publicLink);
-  app.get("/api/card/public/:slug", getPublicCard);
 
   app.use(clerkMiddleware());
   app.use("/api/link", linkRouter);
-  app.use("/api/card", cardRouter);
   // app.use("/api/user", userRouter);
 
   app.use((_, res) => {

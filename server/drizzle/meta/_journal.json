@@ -57,6 +57,13 @@
       "when": 1777886200000,
       "tag": "0007_sync_card_text_colors",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793465231322,
+      "tag": "0008_remove_profile_cards",
+      "breakpoints": true
     }
   ]
 }

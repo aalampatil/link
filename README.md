@@ -16,10 +16,6 @@ A deadline submission management service. Users get a placeholder link they can 
 
 No broken links. No "coming soon" pages. The placeholder link always works.
 
-Users can also create a public social card at `/c/:slug` for profile links such
-as GitHub, LinkedIn, X, portfolio, or any other public URL. The card editor is
-available after sign-in at `/card`.
-
 ---
 
 ## Tech Stack
@@ -136,6 +132,10 @@ docker compose up -d
 ```
 
 ### Database Migrations
+
+Migration `0008_remove_profile_cards` removes the retired profile card table and
+its data. Back up any card data you want to keep before applying it. Link data is
+unaffected.
 
 ```bash
 # Generate migrations from schema
