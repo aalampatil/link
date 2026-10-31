@@ -14,9 +14,7 @@ const GetAllLinks = lazy(() => import("./pages/GetAllLinks"));
 
 const pageFallback = (
   <div className="flex min-h-screen items-center justify-center">
-    <div className="text-sm text-muted-foreground">
-      Loading...
-    </div>
+    <div className="text-sm text-muted-foreground">Loading...</div>
   </div>
 );
 
@@ -51,7 +49,11 @@ const router = createBrowserRouter([
           },
           {
             path: "manage/:slug",
-            element: withSuspense(<ProtectedRoute><ManageUrlPage /></ProtectedRoute>),
+            element: withSuspense(
+              <ProtectedRoute>
+                <ManageUrlPage />
+              </ProtectedRoute>,
+            ),
           },
           {
             path: "get-all",

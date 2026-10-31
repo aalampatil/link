@@ -140,7 +140,13 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
 
   fetchLink: async (slug) => {
     try {
-      set({ fetching: true, data: null, targetUrl: "", file: null, contentType: "Post" });
+      set({
+        fetching: true,
+        data: null,
+        targetUrl: "",
+        file: null,
+        contentType: "Post",
+      });
       const res = await axiosApi.get(`/link/manage/${slug}`);
       set({
         data: res.data,
