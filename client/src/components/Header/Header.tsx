@@ -1,55 +1,30 @@
-import { useNavigate } from "react-router-dom";
-import { Show, UserButton, SignInButton } from '@clerk/react'
-import { Link } from 'lucide-react';
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { Show, UserButton } from "@clerk/react";
+import { ArrowUpRight, Link2, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-
-const Header = () => {
-
-  const navigate = useNavigate()
+export default function Header() {
+  const { pathname } = useLocation();
   return (
-    <header className="w-full border-4 border-border bg-secondary-background px-4 py-4 shadow-shadow">
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 sm:flex-row sm:justify-between">
-        <div className="flex flex-col items-center gap-2 sm:flex-row">
-          <h1 onClick={() => navigate("/")} className="cursor-pointer border-2 border-border bg-main px-3 py-2 text-lg font-heading shadow-shadow sm:text-2xl">
-            deadlink-ap
-          </h1>
-
-          <p className="border-2 border-border bg-main px-3 py-2 text-center text-sm shadow-shadow sm:text-base">
-            deadline-safe placeholder links
-          </p>
-        </div>
-
-        <Show when="signed-in">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/get-all")}
-              className="flex h-10 items-center gap-2 border-2 border-border bg-main px-3 font-heading shadow-shadow transition-transform hover:-translate-x-1 hover:-translate-y-1"
-            >
-              <Link size={16} />
-              Links
-            </button>
-
-            <UserButton>
-              <UserButton.MenuItems>
-                <UserButton.Action
-                  label="Manage Active Links"
-                  labelIcon={<Link size={15} />}
-                  onClick={() => navigate("/get-all")}
-                />
-              </UserButton.MenuItems>
-            </UserButton>
-          </div>
-        </Show>
-
-        <Show when="signed-out">
-          <div className="border-2 border-border bg-main px-3 py-2 font-heading shadow-shadow">
-            <SignInButton />
-          </div>
-        </Show>
+    <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-md">
+      <div className="page-container flex h-18 items-center justify-between gap-4">
+        <Link to="/" aria-label="Deadlink home" className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-main text-white"><Link2 size={19} strokeWidth={2.2} /></span>
+          deadlink<span className="-ml-2 text-main">.</span>
+        </Link>
+        <nav aria-label="Main navigation" className="flex items-center gap-5 sm:gap-8">
+          {pathname === "/" && <a href="#how-it-works" className="quiet-link hidden sm:block">How it works</a>}
+          <Show when="signed-out">
+            <Link to="/sign-in" className="quiet-link">Sign in</Link>
+            <Button asChild className="hidden sm:inline-flex"><Link to="/create-link">Get started <ArrowUpRight size={15} /></Link></Button>
+          </Show>
+          <Show when="signed-in">
+            <NavLink to="/get-all" className={({ isActive }) => `text-sm ${isActive ? "font-medium text-main" : "quiet-link"}`}>My links</NavLink>
+            <Button asChild size="sm"><Link to="/create-link"><Plus size={14} /> New link</Link></Button>
+            <UserButton><UserButton.MenuItems><UserButton.Link label="My links" labelIcon={<Link2 size={15} />} href="/get-all" /></UserButton.MenuItems></UserButton>
+          </Show>
+        </nav>
       </div>
-
     </header>
   );
-};
-
-export default Header;
+}

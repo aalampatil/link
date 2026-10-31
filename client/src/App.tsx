@@ -30,21 +30,12 @@ function App() {
 
   return (
     <>
-      <ToastContainer />
-      <div
-        className="bg-background min-h-screen"
-        style={{
-          backgroundImage: `
-      linear-gradient(rgba(0,0,0,0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px),
-      linear-gradient(#e7f7cf)
-    `,
-          backgroundSize: "75px 75px, 75px 75px, 100% 100%",
-        }}
-      >
+      <ToastContainer position="bottom-right" theme="light" toastStyle={{ fontFamily: 'inherit', fontSize: '14px', borderRadius: '10px' }} />
+      <div className="flex min-h-screen flex-col bg-background">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-4">Skip to content</a>
         <Header />
 
-        <div className="min-h-screen">
+        <div id="main-content" className="flex flex-1 flex-col">
           <Outlet />
         </div>
 

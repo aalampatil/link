@@ -1,80 +1,70 @@
-@import url('https://fonts.googleapis.com/css2?family=Fjalla+One&family=Permanent+Marker&display=swap');
+@import "@fontsource-variable/geist";
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
-  --background: #e7f7cf;
-  --secondary-background: oklch(100% 0 0);
-  --foreground: oklch(0% 0 0);
-  --main-foreground: oklch(0% 0 0);
-  --main: #8ae500;
-  --border: oklch(0% 0 0);
-  --ring: oklch(0% 0 0);
-  --overlay: oklch(0% 0 0 / 0.8);
-  --shadow: 2px 2px 0px 0px var(--border);
-  --chart-1: #8AE500;
-  --chart-2: #0099FF;
-  --chart-3: #FF4D50;
-  --chart-4: #FACC00;
-  --chart-5: #7A83FF;
-  --chart-active-dot: #000;
+  font-family: "Geist Variable", sans-serif;
+  color: #202723;
+  background: #fafbf8;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --background: #fafbf8;
+  --secondary-background: #ffffff;
+  --foreground: #202723;
+  --main: #205c45;
+  --main-foreground: #ffffff;
+  --border: #e0e5df;
+  --ring: #34785a;
+  --shadow: 0 4px 20px #203b2910;
 }
-
-.dark {
-  --background: oklch(23.1% 0.0346 126.75);
-  --secondary-background: oklch(23.93% 0 0);
-  --foreground: oklch(92.49% 0 0);
-  --main-foreground: oklch(0% 0 0);
-  --main: oklch(76.26% 0.21309 132.4002);
-  --border: oklch(0% 0 0);
-  --ring: oklch(100% 0 0);
-  --shadow: 2px 2px 0px 0px var(--border);
-  --chart-1: #7ACC00;
-  --chart-2: #008AE5;
-  --chart-3: #FF6669;
-  --chart-4: #E0B700;
-  --chart-5: #7A83FF;
-  --chart-active-dot: #fff;
-}
-
 @theme inline {
-  --color-main: var(--main);
+  --font-sans: "Geist Variable", sans-serif;
   --color-background: var(--background);
   --color-secondary-background: var(--secondary-background);
   --color-foreground: var(--foreground);
+  --color-main: var(--main);
   --color-main-foreground: var(--main-foreground);
+  --color-primary: var(--main);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #eef2ed;
+  --color-secondary-foreground: #263c30;
+  --color-muted: #f0f3ee;
+  --color-muted-foreground: #657168;
+  --color-destructive: #b23d37;
   --color-border: var(--border);
-  --color-overlay: var(--overlay);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-
-  --spacing-boxShadowX: 2px;
-  --spacing-boxShadowY: 2px;
-  --spacing-reverseBoxShadowX: -2px;
-  --spacing-reverseBoxShadowY: -2px;
-  --radius-base: 5px;
+  --radius-base: 8px;
   --shadow-shadow: var(--shadow);
-  --font-weight-base: 500;
-  --font-weight-heading: 900;
+  --font-weight-base: 400;
+  --font-weight-heading: 600;
 }
-
 @layer base {
-  body {
-    @apply text-foreground font-base bg-background;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-heading;
-  }
+  * { border-color: var(--border); }
+  body { margin: 0; min-width: 320px; }
+  button, a, input, select { -webkit-tap-highlight-color: transparent; }
+  button:not(:disabled), select { cursor: pointer; }
+  h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.035em; }
+  ::selection { background: #d5e8d9; color: #193c2b; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+}
+@layer components {
+  .page-container { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
+  .workspace { @apply mx-auto w-full max-w-5xl px-5 py-12 sm:px-8 sm:py-16; }
+  .panel { @apply rounded-xl border border-border bg-white; }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.16em] text-main; }
+  .field-label { @apply mb-2 block text-sm font-medium; }
+  .field { @apply w-full rounded-lg border border-border bg-white px-3.5 py-3 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/10 disabled:opacity-50; }
+  .status-ready { @apply inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800; }
+  .status-pending { @apply inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800; }
+  .quiet-link { @apply text-sm text-muted-foreground transition-colors hover:text-foreground; }
+}
+.hero-surface { background: radial-gradient(ellipse at 83% 35%, #e7eee3 0, transparent 49%), #f7f9f4; }
+.demo-grid { background-image: radial-gradient(#ccd6ca 0.8px, transparent 0.8px); background-size: 18px 18px; }
+.reveal { animation: reveal 650ms ease-out both; }
+@keyframes reveal { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
