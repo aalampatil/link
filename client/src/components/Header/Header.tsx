@@ -10,7 +10,7 @@ export default function Header() {
       <div className="page-container flex h-18 items-center justify-between gap-4">
         <Link to="/" aria-label="Deadlink home" className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
           <span className="flex size-8 items-center justify-center rounded-lg bg-main text-white"><Link2 size={19} strokeWidth={2.2} /></span>
-          deadlink<span className="-ml-2 text-main">.</span>
+          deadlink
         </Link>
         <nav aria-label="Main navigation" className="flex items-center gap-5 sm:gap-8">
           {pathname === "/" && <a href="#how-it-works" className="quiet-link hidden sm:block">How it works</a>}
