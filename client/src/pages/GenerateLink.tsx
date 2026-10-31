@@ -28,7 +28,9 @@ export default function GenerateLink() {
         <ArrowLeft size={14} /> My links
       </Link>
       <div className="mb-9 mt-8">
-        <p className="eyebrow text-zinc-500">A place for your next project</p>
+        <p className="eyebrow text-muted-foreground">
+          A place for your next project
+        </p>
         <h1 className="mt-3 text-3xl font-medium sm:text-4xl">
           Start with a link.
         </h1>
@@ -39,7 +41,7 @@ export default function GenerateLink() {
       <form onSubmit={handleCreate} className="panel p-6 sm:p-8">
         <label htmlFor="project-name" className="field-label">
           Project name{" "}
-          <span className="font-normal text-zinc-500">(optional)</span>
+          <span className="font-normal text-muted-foreground">(optional)</span>
         </label>
         <Input
           id="project-name"
@@ -56,7 +58,7 @@ export default function GenerateLink() {
         >
           This name appears on your holding page while the work is in progress.
         </p>
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-zinc-100 pt-6">
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
             <LockKeyhole size={13} /> Only you can manage the destination.
           </p>
@@ -72,7 +74,7 @@ export default function GenerateLink() {
       </p>
       {data && (
         <section aria-live="polite" className="panel mt-8 overflow-hidden">
-          <div className="flex items-center gap-2 border-b border-border bg-zinc-50 px-6 py-4 text-sm font-medium">
+          <div className="flex items-center gap-2 border-b border-border bg-muted px-6 py-4 text-sm font-medium">
             <Check size={16} /> Your link is ready
           </div>
           <div className="p-6 sm:p-8">
@@ -82,9 +84,9 @@ export default function GenerateLink() {
             <p className="mb-4 mt-2 text-sm text-muted-foreground">
               Copy this public URL and share it with your audience.
             </p>
-            <div className="flex flex-col gap-3 rounded-lg border border-border bg-zinc-50 p-3 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted p-3 sm:flex-row sm:items-center">
               <span className="flex min-w-0 flex-1 items-center gap-2">
-                <Link2 size={14} className="shrink-0 text-zinc-500" />
+                <Link2 size={14} className="shrink-0 text-muted-foreground" />
                 <span
                   className="break-all font-mono text-xs"
                   data-testid="created-public-url"

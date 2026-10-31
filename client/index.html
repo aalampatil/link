@@ -9,6 +9,25 @@
       content="Share a link before your work is ready. Create a Deadlink placeholder, then connect your finished website or file when it is ready."
     />
     <meta name="theme-color" content="#ffffff" />
+    <script>
+      (() => {
+        let mode = "system";
+        try {
+          const saved = localStorage.getItem("deadlink-theme");
+          if (saved === "light" || saved === "dark") mode = saved;
+        } catch {}
+        const theme =
+          mode === "system"
+            ? matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : mode;
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        document.querySelector('meta[name="theme-color"]').content =
+          theme === "dark" ? "#09090b" : "#ffffff";
+      })();
+    </script>
     <title>Deadlink — Share the link. Finish the work.</title>
   </head>
   <body>

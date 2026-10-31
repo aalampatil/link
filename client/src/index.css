@@ -2,10 +2,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   font-family: "Geist Variable", sans-serif;
-  color: #18181b;
-  background: #ffffff;
+  color: var(--foreground);
+  background: var(--background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,6 +19,28 @@
   --border: #e4e4e7;
   --ring: #71717a;
   --shadow: 0 4px 20px #00000008;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #27272a;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --destructive: #b23d37;
+  --preview-shadow: 0 20px 80px -25px #00000020;
+}
+[data-theme="dark"] {
+  --background: #09090b;
+  --secondary-background: #111113;
+  --foreground: #fafafa;
+  --main: #fafafa;
+  --main-foreground: #18181b;
+  --border: #2c2c30;
+  --ring: #a1a1aa;
+  --shadow: 0 4px 20px #00000030;
+  --secondary: #27272a;
+  --secondary-foreground: #e4e4e7;
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+  --destructive: #f87171;
+  --preview-shadow: 0 20px 80px -25px #00000080;
 }
 @theme inline {
   --font-sans: "Geist Variable", sans-serif;
@@ -26,12 +50,12 @@
   --color-main: var(--main);
   --color-main-foreground: var(--main-foreground);
   --color-primary: var(--main);
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f4f4f5;
-  --color-secondary-foreground: #27272a;
-  --color-muted: #f4f4f5;
-  --color-muted-foreground: #71717a;
-  --color-destructive: #b23d37;
+  --color-primary-foreground: var(--main-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-ring: var(--ring);
   --radius-base: 8px;
@@ -65,8 +89,8 @@
     letter-spacing: -0.035em;
   }
   ::selection {
-    background: #e4e4e7;
-    color: #18181b;
+    background: var(--main);
+    color: var(--main-foreground);
   }
   :focus-visible {
     outline: 2px solid var(--ring);
@@ -85,7 +109,7 @@
     @apply mx-auto w-full max-w-5xl px-5 py-12 sm:px-8 sm:py-16;
   }
   .panel {
-    @apply rounded-xl border border-border bg-white;
+    @apply rounded-xl border border-border bg-secondary-background;
   }
   .eyebrow {
     @apply text-xs font-semibold uppercase tracking-[0.16em] text-main;
@@ -94,13 +118,21 @@
     @apply mb-2 block text-sm font-medium;
   }
   .field {
-    @apply w-full rounded-lg border border-border bg-white px-3.5 py-3 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/10 disabled:opacity-50;
+    @apply w-full rounded-lg border border-border bg-secondary-background px-3.5 py-3 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/10 disabled:opacity-50;
   }
   .status-ready {
-    @apply inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-800;
+    @apply inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-foreground;
   }
   .status-pending {
-    @apply inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-600;
+    @apply inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground;
+  }
+  .inverse-surface {
+    background: #09090b;
+    color: #fafafa;
+    --foreground: #fafafa;
+    --main: #fafafa;
+    --main-foreground: #18181b;
+    --muted-foreground: #a1a1aa;
   }
   .quiet-link {
     @apply text-sm text-muted-foreground transition-colors hover:text-foreground;
@@ -142,9 +174,11 @@ details[open] > p {
   animation: enter 250ms ease-out both;
 }
 .Toastify__toast-container {
-  --toastify-color-success: #18181b;
-  --toastify-color-progress-success: #18181b;
-  --toastify-icon-color-success: #18181b;
+  --toastify-color-success: var(--foreground);
+  --toastify-color-progress-success: var(--foreground);
+  --toastify-icon-color-success: var(--foreground);
+  --toastify-color-dark: var(--secondary-background);
+  --toastify-text-color-dark: var(--foreground);
 }
 @keyframes enter {
   from {

@@ -63,43 +63,43 @@ function ProductPreview() {
         <button
           onClick={() => setConnected(false)}
           aria-pressed={!connected}
-          className={`rounded-full px-4 py-2 text-xs transition-colors ${!connected ? "bg-zinc-900 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}
+          className={`rounded-full px-4 py-2 text-xs transition-colors ${!connected ? "bg-main text-main-foreground" : "text-muted-foreground hover:bg-secondary"}`}
         >
           Before it’s ready
         </button>
-        <ChevronRight size={13} className="text-zinc-500" />
+        <ChevronRight size={13} className="text-muted-foreground" />
         <button
           onClick={() => setConnected(true)}
           aria-pressed={connected}
-          className={`rounded-full px-4 py-2 text-xs transition-colors ${connected ? "bg-zinc-900 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}
+          className={`rounded-full px-4 py-2 text-xs transition-colors ${connected ? "bg-main text-main-foreground" : "text-muted-foreground hover:bg-secondary"}`}
         >
           When it’s ready
         </button>
       </div>
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white text-left shadow-[0_20px_80px_-25px_#00000020]">
-        <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/70 px-5 py-3.5">
+      <div className="overflow-hidden rounded-xl border border-border bg-secondary-background text-left shadow-[var(--preview-shadow)]">
+        <div className="flex items-center justify-between border-b border-border bg-muted/70 px-5 py-3.5">
           <div className="flex gap-1.5" aria-hidden="true">
             <span className="size-2 rounded-full bg-zinc-300" />
             <span className="size-2 rounded-full bg-zinc-300" />
             <span className="size-2 rounded-full bg-zinc-300" />
           </div>
-          <span className="flex items-center gap-2 text-[11px] text-zinc-500">
+          <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <LockKeyhole size={10} /> Your workspace
           </span>
-          <span className="text-[10px] uppercase tracking-widest text-zinc-500">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
             Preview
           </span>
         </div>
         <div className="grid sm:grid-cols-[180px_1fr]">
-          <div className="hidden border-r border-zinc-100 bg-zinc-50/40 p-5 sm:block">
+          <div className="hidden border-r border-border bg-muted/40 p-5 sm:block">
             <div className="mb-8 flex items-center gap-2 text-sm font-semibold">
               <Link2 size={16} /> deadlink
             </div>
-            <div className="flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-xs font-medium">
+            <div className="flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-xs font-medium">
               <Link2 size={13} /> My links{" "}
-              <span className="ml-auto text-zinc-500">1</span>
+              <span className="ml-auto text-muted-foreground">1</span>
             </div>
-            <div className="mt-24 border-t border-zinc-200 pt-4 text-[11px] leading-relaxed text-zinc-500">
+            <div className="mt-24 border-t border-border pt-4 text-[11px] leading-relaxed text-muted-foreground">
               One link.
               <br />
               Room to finish.
@@ -107,21 +107,23 @@ function ProductPreview() {
           </div>
           <div className="p-5 sm:p-8">
             <div className="mb-7 flex items-center justify-between">
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted-foreground">
                 My links <span className="mx-2">/</span> Portfolio 2026
               </p>
-              <span className="text-[10px] text-zinc-500">Example project</span>
+              <span className="text-[10px] text-muted-foreground">
+                Example project
+              </span>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">
+                <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                   Project
                 </p>
                 <h3 className="text-xl font-medium tracking-tight">
                   Portfolio 2026
                 </h3>
               </div>
-              <span className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-[10px] font-medium">
+              <span className="flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[10px] font-medium">
                 {connected ? (
                   <Check size={11} />
                 ) : (
@@ -130,26 +132,28 @@ function ProductPreview() {
                 {connected ? "Connected" : "Awaiting destination"}
               </span>
             </div>
-            <div className="mt-6 rounded-lg border border-zinc-200 px-4 py-3">
-              <p className="mb-1 text-[10px] text-zinc-500">Your public link</p>
+            <div className="mt-6 rounded-lg border border-border px-4 py-3">
+              <p className="mb-1 text-[10px] text-muted-foreground">
+                Your public link
+              </p>
               <p className="flex items-center gap-2 break-all font-mono text-xs sm:text-sm">
-                <Link2 size={13} className="shrink-0 text-zinc-500" />{" "}
+                <Link2 size={13} className="shrink-0 text-muted-foreground" />{" "}
                 deadlink.app/l/portfolio-2026
               </p>
             </div>
-            <div className="my-3 ml-6 h-5 border-l border-dashed border-zinc-300" />
+            <div className="my-3 ml-6 h-5 border-l border-dashed border-border" />
             <div
               key={connected ? "connected" : "pending"}
-              className={`destination-enter flex min-h-18 items-center gap-3 rounded-lg border px-4 py-3 transition-colors ${connected ? "border-zinc-900 bg-zinc-900 text-white" : "border-dashed border-zinc-200 bg-zinc-50"}`}
+              className={`destination-enter flex min-h-18 items-center gap-3 rounded-lg border px-4 py-3 transition-colors ${connected ? "border-main bg-main text-main-foreground" : "border-dashed border-border bg-muted"}`}
               aria-live="polite"
             >
               <span
-                className={`flex size-9 shrink-0 items-center justify-center rounded-md ${connected ? "bg-white/10" : "bg-white border border-zinc-200"}`}
+                className={`flex size-9 shrink-0 items-center justify-center rounded-md ${connected ? "bg-main-foreground/10" : "bg-secondary-background border border-border"}`}
               >
                 {connected ? (
                   <Globe size={16} />
                 ) : (
-                  <FileText size={16} className="text-zinc-500" />
+                  <FileText size={16} className="text-muted-foreground" />
                 )}
               </span>
               <div>
@@ -157,7 +161,7 @@ function ProductPreview() {
                   {connected ? "portfolio.example.com" : "Your work goes here"}
                 </p>
                 <p
-                  className={`mt-1 text-[10px] ${connected ? "text-zinc-300" : "text-zinc-500"}`}
+                  className={`mt-1 text-[10px] ${connected ? "text-main-foreground/70" : "text-muted-foreground"}`}
                 >
                   {connected
                     ? "Visitors now go directly to your work."
@@ -171,7 +175,7 @@ function ProductPreview() {
           </div>
         </div>
       </div>
-      <p className="mt-5 flex items-center justify-center gap-2 text-xs text-zinc-500">
+      <p className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
         <RefreshCw size={12} /> The destination changes. The shared link stays
         the same.
       </p>
@@ -183,16 +187,16 @@ export default function Homepage() {
   return (
     <main>
       <section className="page-container pb-20 pt-16 text-center sm:pb-28 sm:pt-24">
-        <div className="hero-enter mx-auto mb-7 flex w-fit items-center gap-2 rounded-full border border-zinc-200 px-3 py-1.5 text-[11px] font-medium text-zinc-500">
+        <div className="hero-enter mx-auto mb-7 flex w-fit items-center gap-2 rounded-full border border-border px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
           <span className="size-1.5 rounded-full bg-zinc-800" /> A little more
           room to finish.
         </div>
         <h1 className="hero-enter mx-auto max-w-4xl text-[clamp(2.9rem,7.8vw,6.2rem)] font-medium leading-[1.04] tracking-[-0.065em]">
           Share the link.
           <br />
-          <span className="text-zinc-500">Finish the work.</span>
+          <span className="text-muted-foreground">Finish the work.</span>
         </h1>
-        <p className="hero-enter mx-auto mt-7 max-w-md text-base leading-7 text-zinc-500 sm:text-lg">
+        <p className="hero-enter mx-auto mt-7 max-w-md text-base leading-7 text-muted-foreground sm:text-lg">
           Your next project deserves a link before it’s ready. Create it now.
           Connect your finished work later.
         </p>
@@ -204,19 +208,19 @@ export default function Homepage() {
           </Button>
           <a
             href="#how-it-works"
-            className="flex items-center gap-2 px-3 py-3 text-sm text-zinc-600 hover:text-black"
+            className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground hover:text-foreground"
           >
             See how it works <ArrowDown size={14} />
           </a>
         </div>
         <ProductPreview />
       </section>
-      <section className="border-y border-zinc-200 bg-zinc-50/60">
+      <section className="border-y border-border bg-muted/60">
         <div className="page-container flex flex-col items-center justify-between gap-5 py-7 sm:flex-row">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             For the work that’s still in progress.
           </p>
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-xs font-medium tracking-wide text-zinc-600">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-xs font-medium tracking-wide text-muted-foreground">
             <span>Applications</span>
             <span>Project submissions</span>
             <span>Portfolios</span>
@@ -227,7 +231,7 @@ export default function Homepage() {
       <section id="how-it-works" className="page-container py-20 sm:py-28">
         <Reveal className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+            <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               The process
             </p>
             <h2 className="max-w-lg text-3xl font-medium leading-tight sm:text-4xl">
@@ -236,7 +240,7 @@ export default function Homepage() {
               you and your deadline.
             </h2>
           </div>
-          <p className="max-w-xs text-sm leading-6 text-zinc-500">
+          <p className="max-w-xs text-sm leading-6 text-muted-foreground">
             Separate the moment you share from the moment you’re ready. Three
             steps. One consistent link.
           </p>
@@ -246,13 +250,13 @@ export default function Homepage() {
             <Reveal
               key={step.number}
               delay={Number(step.number) * 75}
-              className="border-t border-zinc-200 pt-6"
+              className="border-t border-border pt-6"
             >
-              <span className="font-mono text-xs text-zinc-500">
+              <span className="font-mono text-xs text-muted-foreground">
                 {step.number}
               </span>
               <h3 className="mb-3 mt-8 text-lg font-medium">{step.title}</h3>
-              <p className="max-w-xs text-sm leading-6 text-zinc-500">
+              <p className="max-w-xs text-sm leading-6 text-muted-foreground">
                 {step.text}
               </p>
             </Reveal>
@@ -260,16 +264,16 @@ export default function Homepage() {
         </div>
       </section>
       <section className="page-container pb-20 sm:pb-28">
-        <Reveal className="grid overflow-hidden rounded-2xl border border-zinc-200 md:grid-cols-2">
-          <div className="bg-zinc-50 p-8 sm:p-12">
-            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+        <Reveal className="grid overflow-hidden rounded-2xl border border-border md:grid-cols-2">
+          <div className="bg-muted p-8 sm:p-12">
+            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Made for the in-between
             </span>
             <h2 className="mt-5 max-w-sm text-3xl font-medium leading-tight sm:text-4xl">
               The same link.
               <br />A new destination.
             </h2>
-            <p className="mt-5 max-w-sm text-sm leading-7 text-zinc-500">
+            <p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">
               A portfolio you’re polishing. A proposal awaiting the final edit.
               A project with one more detail to get right. Give it a place now,
               and connect the result later.
@@ -281,7 +285,7 @@ export default function Homepage() {
               Make room for your next project <ArrowRight size={15} />
             </Link>
           </div>
-          <div className="flex flex-col justify-center divide-y divide-zinc-100 px-8 sm:px-12">
+          <div className="flex flex-col justify-center divide-y divide-border px-8 sm:px-12">
             {[
               {
                 icon: Link2,
@@ -303,13 +307,13 @@ export default function Homepage() {
                 <Icon
                   size={18}
                   strokeWidth={1.5}
-                  className="mt-1 shrink-0 text-zinc-500"
+                  className="mt-1 shrink-0 text-muted-foreground"
                 />
                 <div>
                   <h3 className="text-sm font-medium tracking-normal">
                     {title}
                   </h3>
-                  <p className="mt-2 max-w-xs text-sm leading-6 text-zinc-500">
+                  <p className="mt-2 max-w-xs text-sm leading-6 text-muted-foreground">
                     {text}
                   </p>
                 </div>
@@ -321,7 +325,7 @@ export default function Homepage() {
       <section className="page-container pb-20 sm:pb-28">
         <Reveal className="grid gap-10 md:grid-cols-[1fr_1.4fr]">
           <div>
-            <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+            <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               A few details
             </p>
             <h2 className="text-3xl font-medium">
@@ -330,22 +334,22 @@ export default function Homepage() {
               Clear answers.
             </h2>
           </div>
-          <div className="border-t border-zinc-200">
+          <div className="border-t border-border">
             {questions.map((q) => (
               <details
                 key={q.title}
-                className="group border-b border-zinc-200 py-5"
+                className="group border-b border-border py-5"
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-5 text-sm font-medium [&::-webkit-details-marker]:hidden">
                   {q.title}
                   <span
-                    className="text-lg font-normal text-zinc-500 transition-transform group-open:rotate-45"
+                    className="text-lg font-normal text-muted-foreground transition-transform group-open:rotate-45"
                     aria-hidden="true"
                   >
                     +
                   </span>
                 </summary>
-                <p className="mt-4 max-w-lg pr-6 text-sm leading-7 text-zinc-500">
+                <p className="mt-4 max-w-lg pr-6 text-sm leading-7 text-muted-foreground">
                   {q.text}
                 </p>
               </details>
@@ -353,23 +357,23 @@ export default function Homepage() {
           </div>
         </Reveal>
       </section>
-      <section className="border-t border-zinc-200 bg-zinc-950 text-white">
+      <section className="border-t border-border inverse-surface">
         <div className="page-container flex flex-col items-start justify-between gap-8 py-16 sm:flex-row sm:items-center sm:py-20">
           <div>
-            <p className="mb-4 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+            <p className="mb-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Ready when you are
             </p>
             <h2 className="text-3xl font-medium sm:text-4xl">
               The link is the easy part.
             </h2>
-            <p className="mt-4 text-sm text-zinc-400">
+            <p className="mt-4 text-sm text-muted-foreground">
               Create a place for your next piece of work.
             </p>
           </div>
           <Button
             asChild
             size="lg"
-            className="rounded-full bg-white px-7 text-zinc-900 hover:bg-zinc-200"
+            className="rounded-full bg-main px-7 text-main-foreground hover:bg-main/90"
           >
             <Link to="/create-link">
               Create a link <ArrowUpRight size={16} />

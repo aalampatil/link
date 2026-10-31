@@ -1,32 +1,34 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Show, UserButton } from "@clerk/react";
 import { ArrowUpRight, Link2, Plus } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 
 export default function Header() {
   const { pathname } = useLocation();
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-md">
-      <div className="page-container flex h-18 items-center justify-between gap-4">
+      <div className="page-container flex min-h-18 flex-wrap items-center justify-between gap-x-4 gap-y-3 py-4 sm:flex-nowrap sm:py-0">
         <Link
           to="/"
           aria-label="Deadlink home"
           className="flex items-center gap-2.5 text-xl font-semibold tracking-tight"
         >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-main text-white">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-main text-main-foreground">
             <Link2 size={19} strokeWidth={2.2} />
           </span>
           deadlink
         </Link>
         <nav
           aria-label="Main navigation"
-          className="flex items-center gap-5 sm:gap-8"
+          className="flex flex-wrap items-center justify-end gap-2 sm:gap-6"
         >
           {pathname === "/" && (
             <a href="#how-it-works" className="quiet-link hidden sm:block">
               How it works
             </a>
           )}
+          <ThemeToggle />
           <Show when="signed-out">
             <Link to="/sign-in" className="quiet-link">
               Sign in

@@ -19,16 +19,23 @@ export default function PublicUrl() {
   return (
     <main className="page-container flex flex-1 items-center justify-center py-20 sm:py-28">
       <section className="w-full max-w-md text-center" aria-live="polite">
-        <span className="mx-auto mb-7 flex size-14 items-center justify-center rounded-2xl border border-border bg-zinc-50">
+        <span className="mx-auto mb-7 flex size-14 items-center justify-center rounded-2xl border border-border bg-muted">
           {isLoading ? (
-            <RefreshCw size={21} className="animate-spin text-zinc-500" />
+            <RefreshCw
+              size={21}
+              className="animate-spin text-muted-foreground"
+            />
           ) : data ? (
-            <Clock3 size={23} strokeWidth={1.5} className="text-zinc-500" />
+            <Clock3
+              size={23}
+              strokeWidth={1.5}
+              className="text-muted-foreground"
+            />
           ) : (
-            <Link2 size={23} className="text-zinc-500" />
+            <Link2 size={23} className="text-muted-foreground" />
           )}
         </span>
-        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {isLoading
             ? "Just a moment"
             : data

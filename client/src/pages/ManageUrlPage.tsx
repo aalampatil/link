@@ -62,7 +62,7 @@ export default function ManageUrlPage() {
         <ArrowLeft size={14} /> My links
       </Link>
       <div className="mb-9 mt-8">
-        <p className="eyebrow text-zinc-500">Link settings</p>
+        <p className="eyebrow text-muted-foreground">Link settings</p>
         <h1 className="mt-3 text-3xl font-medium sm:text-4xl">
           Connect your work.
         </h1>
@@ -106,7 +106,7 @@ export default function ManageUrlPage() {
                   onClick={() => chooseType(type)}
                   aria-pressed={contentType === type}
                   disabled={loading}
-                  className={`flex items-center gap-2 rounded-lg border p-4 text-sm transition-colors disabled:opacity-50 ${contentType === type ? "border-zinc-900 bg-zinc-50 font-medium" : "border-border text-zinc-500 hover:border-zinc-400"}`}
+                  className={`flex items-center gap-2 rounded-lg border p-4 text-sm transition-colors disabled:opacity-50 ${contentType === type ? "border-main bg-muted font-medium" : "border-border text-muted-foreground hover:border-zinc-400"}`}
                 >
                   <Icon size={16} />
                   {label}
@@ -143,14 +143,14 @@ export default function ManageUrlPage() {
                   required
                   disabled={loading}
                   onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                  className="field text-xs file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-medium"
+                  className="field text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:font-medium"
                 />
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
                   Upload your finished document, image, or supported media file.
                 </p>
               </div>
             )}
-            <div className="mt-7 border-t border-zinc-100 pt-6">
+            <div className="mt-7 border-t border-border pt-6">
               <Button type="submit" disabled={loading}>
                 {loading
                   ? "Saving destination…"
@@ -167,8 +167,8 @@ export default function ManageUrlPage() {
             </div>
           </form>
           <aside className="panel overflow-hidden">
-            <div className="border-b border-border bg-zinc-50 px-5 py-4">
-              <div className="mb-3 flex items-center gap-2 text-xs text-zinc-500">
+            <div className="border-b border-border bg-muted px-5 py-4">
+              <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
                 <Link2 size={13} /> Link overview
               </div>
               <h2 className="break-words text-base font-medium">
@@ -194,7 +194,7 @@ export default function ManageUrlPage() {
                   href={publicUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="break-all font-mono text-[11px] leading-5 text-zinc-500 hover:text-black"
+                  className="break-all font-mono text-[11px] leading-5 text-muted-foreground hover:text-foreground"
                 >
                   {publicUrl}
                 </a>
@@ -208,7 +208,7 @@ export default function ManageUrlPage() {
                     href={data.mappedUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="break-all text-xs leading-5 text-zinc-500 hover:text-black"
+                    className="break-all text-xs leading-5 text-muted-foreground hover:text-foreground"
                   >
                     {data.mappedUrl}
                   </a>

@@ -75,7 +75,7 @@ export default function GetAllLinks() {
     <main className="workspace">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="eyebrow text-zinc-500">Your workspace</p>
+          <p className="eyebrow text-muted-foreground">Your workspace</p>
           <h1 className="mt-3 text-3xl font-medium sm:text-4xl">My links</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             A place for everything you’re working toward.
@@ -118,14 +118,17 @@ export default function GetAllLinks() {
               key={tab.value}
               onClick={() => setFilter(tab.value)}
               aria-pressed={filter === tab.value}
-              className={`rounded-md px-3 py-2 text-xs font-medium ${filter === tab.value ? "bg-zinc-100 text-zinc-900" : "text-zinc-500 hover:bg-zinc-50"}`}
+              className={`rounded-md px-3 py-2 text-xs font-medium ${filter === tab.value ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-muted"}`}
             >
               {tab.label}
             </button>
           ))}
         </div>
         <div className="relative sm:w-60">
-          <Search size={14} className="absolute left-3 top-3 text-zinc-500" />
+          <Search
+            size={14}
+            className="absolute left-3 top-3 text-muted-foreground"
+          />
           <input
             aria-label="Search links"
             value={query}
@@ -148,7 +151,7 @@ export default function GetAllLinks() {
       ) : loading ? (
         <div className="space-y-3" role="status" aria-label="Loading links">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="panel h-40 animate-pulse bg-zinc-50" />
+            <div key={i} className="panel h-40 animate-pulse bg-muted" />
           ))}
           <span className="sr-only">Loading your links</span>
         </div>
@@ -161,8 +164,8 @@ export default function GetAllLinks() {
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-zinc-50">
-                    <Link2 size={17} className="text-zinc-500" />
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted">
+                    <Link2 size={17} className="text-muted-foreground" />
                   </span>
                   <div className="min-w-0">
                     <h2 className="truncate text-sm font-medium tracking-normal">
@@ -191,7 +194,7 @@ export default function GetAllLinks() {
                   {link.mappedUrl || "No destination connected yet"}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-4">
+              <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
                 <Button
                   size="sm"
                   variant="outline"
@@ -222,7 +225,7 @@ export default function GetAllLinks() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="ml-auto text-zinc-500 hover:bg-red-50 hover:text-red-700"
+                  className="ml-auto text-muted-foreground hover:bg-red-50 hover:text-red-700"
                   aria-label={`Delete ${link.displayTitle || "untitled project"}`}
                   disabled={deleting === link.slug}
                   onClick={() => handleDelete(link.slug)}
@@ -236,8 +239,8 @@ export default function GetAllLinks() {
         </div>
       ) : (
         <div className="panel flex flex-col items-center px-6 py-16 text-center">
-          <span className="mb-5 flex size-12 items-center justify-center rounded-xl border border-border bg-zinc-50">
-            <Link2 size={20} className="text-zinc-500" />
+          <span className="mb-5 flex size-12 items-center justify-center rounded-xl border border-border bg-muted">
+            <Link2 size={20} className="text-muted-foreground" />
           </span>
           <h2 className="text-lg font-medium">
             {query || filter !== "all"

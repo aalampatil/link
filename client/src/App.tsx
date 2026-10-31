@@ -6,9 +6,11 @@ import Footer from "./components/Footer/Footer";
 import { ToastContainer } from "react-toastify";
 import { attachTokenInterceptor } from "./config/axiosApi";
 import { useAuth } from "@clerk/react";
+import { useThemeStore } from "./store/ThemeStore";
 import axiosApi from "./config/axiosApi";
 
 function App() {
+  const theme = useThemeStore((state) => state.resolvedTheme);
   const { isLoaded, getToken } = useAuth();
   const getTokenRef = useRef<typeof getToken | null>(null);
 
@@ -31,7 +33,7 @@ function App() {
     <>
       <ToastContainer
         position="bottom-right"
-        theme="light"
+        theme={theme}
         toastStyle={{
           fontFamily: "inherit",
           fontSize: "14px",
@@ -41,7 +43,7 @@ function App() {
       <div className="flex min-h-screen flex-col bg-background">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-4"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-secondary-background focus:p-4"
         >
           Skip to content
         </a>
