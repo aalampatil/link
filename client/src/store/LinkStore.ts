@@ -120,7 +120,7 @@ type ManageLinkStore = {
 export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
   data: null,
   targetUrl: "",
-  contentType: null,
+  contentType: "Post",
   file: null,
 
   fetching: false,
@@ -140,7 +140,7 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
 
   fetchLink: async (slug) => {
     try {
-      set({ fetching: true });
+      set({ fetching: true, data: null, targetUrl: "", file: null, contentType: "Post" });
       const res = await axiosApi.get(`/link/manage/${slug}`);
       set({
         data: res.data,
@@ -175,7 +175,7 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
       });
 
       set({
-        data: res.data,
+        data: { ...get().data!, ...res.data },
         targetUrl: "",
         file: null,
       });
@@ -199,16 +199,18 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
 
 type PublicLinkStore = {
   data: LinkData | null;
+  error: string | null;
   isLoading: boolean;
   fetchLink: (slug: string) => Promise<void>;
 };
 
 export const usePublicLinkStore = create<PublicLinkStore>((set) => ({
   data: null,
+  error: null,
   isLoading: true,
   fetchLink: async (slug) => {
     try {
-      set({ isLoading: true, data: null });
+      set({ isLoading: true, data: null, error: null });
       const res = await publicAxiosApi.get(`/link/public/${slug}`);
       const link = res.data.mappedUrl;
       if (link) {
@@ -225,8 +227,8 @@ export const usePublicLinkStore = create<PublicLinkStore>((set) => ({
           : "An error occurred while redirecting";
       set({
         data: null,
+        error: message || "We couldn’t open this link. Please try again.",
       });
-      toast.error(message);
     } finally {
       set({ isLoading: false });
     }

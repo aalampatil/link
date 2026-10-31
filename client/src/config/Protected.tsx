@@ -11,11 +11,11 @@ export default function ProtectedRoute({
 
 
   if (!isLoaded) {
-    return <div className="flex items-center justify-center">Loading...</div>;
+    return <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground" role="status">Loading your workspace…</div>;
   }
 
   if (!isSignedIn) {
-    return <Navigate to="/sign-in" />;
+    return <Navigate to="/sign-in" replace />;
   }
 
   return children;

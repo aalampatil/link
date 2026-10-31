@@ -1,185 +1,42 @@
-import { useEffect } from "react"
-import { toast } from "react-toastify"
-import { Button } from "@/components/ui/button"
-import { useFetchLinksStore } from "../store/LinkStore"
-import axios from "axios"
-import axiosApi from "@/config/axiosApi"
-import { linkManageUrl, linkPublicUrl } from "@/lib/localUrls"
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowUpRight, Check, Copy, ExternalLink, Link2, Plus, Search, Settings2, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
+import { useFetchLinksStore } from "@/store/LinkStore";
+import axiosApi from "@/config/axiosApi";
+import { linkPublicUrl } from "@/lib/localUrls";
+import { copyLink } from "@/lib/clipboard";
 
-function GetAllLinks() {
+const formatDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString("en", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
-  const { allLinks, loading, fetchAllLinks } = useFetchLinksStore()
-
-  useEffect(() => {
-    const handleFetch = async () => {
-      try {
-        await fetchAllLinks()
-      } catch (err) {
-        const errorMessage = axios.isAxiosError(err) && err.response?.data?.message
-          ? err.response.data.message
-          : "Failed to fetch links";
-        toast.error(errorMessage);
-      }
-    }
-    handleFetch()
-  }, [fetchAllLinks])
-
-  const copyToClipboard = (text?: string | null) => {
-    if (!text) return
-    navigator.clipboard.writeText(text)
-    toast.success("copied to clipboard")
-  }
-
-  const formatDate = (iso?: string | null) =>
-    iso
-      ? new Date(iso).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-      : "—"
-
-  const handleDelete = async (slug?: string | null) => {
-    if (!slug) return
-    if (!window.confirm("Delete this link? This action cannot be undone.")) return
-    try {
-      // await deleteLink(id)  <-- wire up your delete action here
-      await axiosApi.delete(`/link/delete/${slug}`)
-      toast.success("Link deleted")
-      fetchAllLinks()
-    } catch (err) {
-      const errorMessage = axios.isAxiosError(err) && err.response?.data?.message
-        ? err.response.data.message
-        : "Failed to delete link"
-      toast.error(errorMessage)
-    }
-  }
-
+export default function GetAllLinks() {
+  const { allLinks, loading, fetchAllLinks } = useFetchLinksStore();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [error, setError] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const load = useCallback(async () => {
+    try { await fetchAllLinks(); setError(false); }
+    catch { setError(true); }
+  }, [fetchAllLinks]);
+  useEffect(() => { void load(); }, [load]);
+  const links = allLinks ?? [];
+  const filtered = links.filter(link => `${link.displayTitle} ${link.slug}`.toLowerCase().includes(query.toLowerCase()) && (filter === "all" || (filter === "ready" ? !!link.mappedUrl : !link.mappedUrl)));
+  const handleDelete = async (slug: string) => {
+    if (!window.confirm("Delete this link? People with the public URL will no longer be able to open it. This cannot be undone.")) return;
+    setDeleting(slug);
+    try { await axiosApi.delete(`/link/delete/${slug}`); toast.success("Link deleted"); await load(); }
+    catch { toast.error("Could not delete the link. Please try again."); }
+    finally { setDeleting(null); }
+  };
   return (
-    <div className="min-h-screen bg-background font-mono">
-      <main className="max-w-5xl mx-auto px-8 py-9">
-        <header className="bg-main border border-border w-fit p-2 my-4 hover:shadow-shadow hover:-translate-x-1 hover:-translate-y-1">Link Vault</header>
-
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-44 bg-white border-2 border-border shadow-shadow relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-linear-to-r from-transparent via-[#facc0040] to-transparent animate-[shimmer_1.2s_infinite]" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-row-2 gap-5">
-            {allLinks?.map((link) => (
-              <div
-                key={link.id}
-                className="bg-white border-2 border-border p-5 flex flex-col gap-3 hover:-translate-x-2 hover:-translate-y-2 hover:shadow-shadow transition-all"
-              >
-                {/* Title + Content Type + Status dot */}
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-sans font-black text-base leading-tight">
-                      {link.displayTitle || "Untitled"}
-                    </span>
-                    {/* Content Type Badge */}
-                    {link.contentType && (
-                      <span className="text-[10px] font-bold uppercase border border-border bg-background px-1.5 py-0.5 leading-tight">
-                        {link.contentType}
-                      </span>
-                    )}
-                  </div>
-
-                  <span
-                    className={`w-4 h-4 rounded-full border-border shrink-0 mt-1 hover:shadow-shadow hover:-translate-x-1 hover:-translate-y-1 ${link.mappedUrl ? "bg-[#15d600]" : "bg-[#d90808]"}`}
-                    title={link.mappedUrl ? "Active" : "Pending"}
-                  />
-                </div>
-
-                {/* Mapped URL */}
-                {link.mappedUrl ? (
-                  <a
-                    href={link.mappedUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 bg-background border border-border px-3 py-1.5 text-xs text-gray-600 hover:text-black hover:underline hover:shadow-shadow hover:-translate-x-1 hover:-translate-y-1 truncate"
-                  >
-                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                      <path
-                        d="M4.5 1H1v9h9V7M7 1h3m0 0v3M7 4l3-3"
-                        stroke="#555"
-                        strokeWidth="1.3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <span className="truncate">{link.mappedUrl}</span>
-                  </a>
-                ) : (
-                  <span className="text-xs text-gray-400">URL not mapped yet</span>
-                )}
-
-                {/* Slug */}
-                <button
-                  onClick={() => copyToClipboard(linkPublicUrl(link.slug, link.publicUrl))}
-                  className="flex items-center gap-1.5 bg-main border border-border px-2.5 py-1 text-xs font-bold w-fit hover:bg-yellow-300 hover:shadow-shadow hover:-translate-x-1 hover:-translate-y-1 transition-colors"
-                >
-                  /{link.slug}
-                </button>
-
-                {/* Dates */}
-                <div className="flex justify-between text-sm text-black border-t border-dashed border-border pt-2.5">
-                  <span>Created On: {formatDate(link.createdAt)}</span>
-                  <span>Mapped On: {formatDate(link.mappedOn)}</span>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-row flex-wrap gap-2 sm:gap-2">
-                  <Button
-                    onClick={() =>
-                      copyToClipboard(linkPublicUrl(link.slug, link.publicUrl))
-                    }
-                    disabled={!link.publicUrl && !link.slug}
-                    className="flex-1 h-8 rounded-none border border-border bg-white text-xs font-bold font-mono hover:bg-background hover:shadow-shadow hover:-translate-x-1 hover:-translate-y-1 transition-colors"
-                  >
-                    Copy Public URL ↗
-                  </Button>
-
-                  <Button
-                    onClick={() =>
-                      window.open(linkPublicUrl(link.slug, link.publicUrl), "_blank")
-                    }
-                    disabled={!link.publicUrl && !link.slug}
-                    className={`flex-1 h-8 rounded-none border border-border bg-white text-xs font-bold font-mono hover:bg-background hover:shadow-shadow hover:-translate-x-1 hover:-translate-y-1 transition-colors ${!link.publicUrl && !link.slug ? "cursor-none" : "cursor-pointer"}`}
-                  >
-                    Visit Public Url ↗
-                  </Button>
-
-                  <Button
-                    onClick={() => window.open(linkManageUrl(link.slug, link.manageUrl), "_blank")}
-                    disabled={!link.manageUrl && !link.slug}
-                    className="flex-1 h-8 rounded-none border border-border bg-white text-xs font-bold font-mono hover:bg-background hover:shadow-shadow hover:-translate-x-1 hover:-translate-y-1 transition-colors"
-                  >
-                    Manage Url ↗
-                  </Button>
-
-                  {/* Delete Button */}
-                  <Button
-                    onClick={() => handleDelete(link.slug)}
-                    className="flex-1 h-8 rounded-none border border-border bg-white text-xs font-bold font-mono hover:bg-red-100 hover:shadow-shadow hover:-translate-x-1 hover:-translate-y-1 transition-colors text-red-600 hover:text-red-700"
-                  >
-                    Delete ✕
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
-  )
+    <main className="workspace">
+      <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow text-zinc-400">Your workspace</p><h1 className="mt-3 text-3xl font-medium sm:text-4xl">My links</h1><p className="mt-3 text-sm text-muted-foreground">A place for everything you’re working toward.</p></div><Button asChild><Link to="/create-link"><Plus size={15} /> Create link</Link></Button></div>
+      <div className="my-9 grid grid-cols-3 divide-x divide-zinc-200 border-y border-border py-6">{[{label: "Total links", value: links.length},{label: "Connected", value: links.filter(l => l.mappedUrl).length},{label: "In progress", value: links.filter(l => !l.mappedUrl).length}].map(stat => <div key={stat.label} className="px-4 first:pl-0 sm:px-8"><p className="text-xs text-muted-foreground">{stat.label}</p><p className="mt-2 text-2xl font-medium tracking-tight">{loading && !allLinks ? "—" : stat.value}</p></div>)}</div>
+      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row"><div className="flex gap-1" role="group" aria-label="Filter links">{[{value:"all",label:"All links"},{value:"ready",label:"Connected"},{value:"pending",label:"In progress"}].map(tab => <button key={tab.value} onClick={() => setFilter(tab.value)} aria-pressed={filter === tab.value} className={`rounded-md px-3 py-2 text-xs font-medium ${filter === tab.value ? "bg-zinc-100 text-zinc-900" : "text-zinc-500 hover:bg-zinc-50"}`}>{tab.label}</button>)}</div><div className="relative sm:w-60"><Search size={14} className="absolute left-3 top-3 text-zinc-400" /><input aria-label="Search links" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search projects…" className="field py-2.5 pl-9 text-xs" /></div></div>
+      {error ? <div className="panel p-10 text-center" role="alert"><h2 className="text-lg">We couldn’t load your links.</h2><p className="my-3 text-sm text-muted-foreground">Check your connection and try again.</p><Button variant="outline" onClick={load}>Try again</Button></div> : loading ? <div className="space-y-3" role="status" aria-label="Loading links">{[1,2,3].map(i => <div key={i} className="panel h-40 animate-pulse bg-zinc-50" />)}<span className="sr-only">Loading your links</span></div> : filtered.length ? <div className="space-y-3">{filtered.map(link => <article key={link.id} className="panel p-5 transition-shadow hover:shadow-sm sm:p-6"><div className="flex items-start justify-between gap-4"><div className="flex min-w-0 items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-zinc-50"><Link2 size={17} className="text-zinc-500" /></span><div className="min-w-0"><h2 className="truncate text-sm font-medium tracking-normal">{link.displayTitle || "Untitled project"}</h2><p className="mt-1 text-xs text-muted-foreground">Created {formatDate(link.createdAt)}</p></div></div><span className={link.mappedUrl ? "status-ready" : "status-pending"}>{link.mappedUrl ? <Check size={11} /> : <span className="size-1.5 rounded-full bg-zinc-400" />}{link.mappedUrl ? "Connected" : "In progress"}</span></div><div className="my-5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span className="break-all font-mono">/l/{link.slug}</span><ArrowUpRight size={12} /><span className="min-w-0 truncate">{link.mappedUrl || "No destination connected yet"}</span></div><div className="flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-4"><Button size="sm" variant="outline" onClick={() => copyLink(linkPublicUrl(link.slug, link.publicUrl))}><Copy size={12} /> Copy link</Button><Button asChild size="sm" variant="ghost"><a href={linkPublicUrl(link.slug, link.publicUrl)} target="_blank" rel="noreferrer"><ExternalLink size={12} /> Open<span className="sr-only"> {link.displayTitle || "project"} in a new tab</span></a></Button><Button asChild size="sm" variant="ghost"><Link to={`/manage/${encodeURIComponent(link.slug)}`}><Settings2 size={12} /> Manage</Link></Button><Button size="sm" variant="ghost" className="ml-auto text-zinc-400 hover:bg-red-50 hover:text-red-700" aria-label={`Delete ${link.displayTitle || "untitled project"}`} disabled={deleting === link.slug} onClick={() => handleDelete(link.slug)}><Trash2 size={13} />{deleting === link.slug ? "Deleting…" : "Delete"}</Button></div></article>)}</div> : <div className="panel flex flex-col items-center px-6 py-16 text-center"><span className="mb-5 flex size-12 items-center justify-center rounded-xl border border-border bg-zinc-50"><Link2 size={20} className="text-zinc-400" /></span><h2 className="text-lg font-medium">{query || filter !== "all" ? "No matching links" : "Your next project starts here."}</h2><p className="mb-6 mt-2 max-w-xs text-sm leading-6 text-muted-foreground">{query || filter !== "all" ? "Try a different search or view all your links." : "Create a link now. Give your work a destination when it’s ready."}</p>{query || filter !== "all" ? <Button variant="outline" onClick={() => {setQuery("");setFilter("all");}}>Clear filters</Button> : <Button asChild><Link to="/create-link"><Plus size={14} /> Create your first link</Link></Button>}</div>}
+      <p className="mt-6 text-xs text-muted-foreground">Links are valid for 30 days from creation.</p>
+    </main>
+  );
 }
-
-export default GetAllLinks

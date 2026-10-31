@@ -1,11 +1,6 @@
 import { SignIn } from "@clerk/react";
+import AuthLayout from "@/components/AuthLayout";
 
-function SignInPage() {
-  return (
-    <div className="flex justify-center items-center min-h-screen">
-      <SignIn />
-    </div>
-  );
+export default function SignInPage() {
+  return <AuthLayout><SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" fallbackRedirectUrl="/get-all" /></AuthLayout>;
 }
-
-export default SignInPage;

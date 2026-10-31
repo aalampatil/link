@@ -1,180 +1,37 @@
-import { Button } from "@/components/ui/button";
-import { useCallback, useEffect, } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "@clerk/react";
+import { useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, ArrowUpRight, Check, Copy, FileUp, Globe, Link2 } from "lucide-react";
 import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
 import { useManageLinkStore } from "@/store/LinkStore";
+import { copyLink } from "@/lib/clipboard";
+import { linkPublicUrl } from "@/lib/localUrls";
 
-const ManageUrlPage = () => {
-
-    const { data, fetchLink, mapUrl, loading, fetching, targetUrl, setTargetUrl, file, setFile, contentType, setContentType } = useManageLinkStore()
-
-    const navigate = useNavigate();
-    const { slug } = useParams();
-    const { isLoaded, isSignedIn } = useAuth();
-
-    const handleFetch = useCallback(async () => {
-        if (!slug) return;
-
-        await fetchLink(slug)
-
-    }, [slug, fetchLink]);
-
-    const handleMap = async () => {
-        if (!slug) return;
-
-        if (!contentType) {
-            toast.error("Select Content Type");
-            return;
-        }
-
-        if (contentType === "Post" && !targetUrl.trim()) {
-            toast.error("Please enter a target URL");
-            return;
-        }
-        if (contentType === "File" && !file) {
-            toast.error("Please select a file");
-            return;
-        }
-
-
-
-        const mapped = await mapUrl(slug)
-        if (mapped) {
-            toast.success("URL mapped successfully!");
-        }
-
-    };
-
-    const copyText = async (text: string) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            toast.success("Copied!");
-        } catch {
-            const el = document.createElement("textarea");
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand("copy");
-            document.body.removeChild(el);
-            toast.success("Copied!");
-        }
-    };
-
-    useEffect(() => {
-        if (!isLoaded) return;
-        if (!isSignedIn) {
-            toast.error("You must be signed in to manage links");
-            navigate("/sign-in");
-            return;
-        }
-        handleFetch();
-    }, [slug, isLoaded, isSignedIn, fetchLink, navigate, handleFetch]);
-
-    return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-            <div className="w-full max-w-3xl flex flex-col gap-6">
-
-                {/* Page Title */}
-                <div className="border-4 border-border shadow-shadow bg-main p-4 text-center">
-                    <h1 className="text-2xl sm:text-3xl font-heading">Manage Your Link</h1>
-                </div>
-
-                {/* Link Info */}
-                {fetching ? (
-                    <div className="border-4 border-border shadow-shadow bg-secondary-background p-4 text-center">
-                        <p>Loading...</p>
-                    </div>
-                ) : data ? (
-                    <div className="border-4 border-border shadow-shadow bg-secondary-background p-4 flex flex-col gap-4">
-                        <div>
-                            <p className="font-heading">Slug</p>
-                            <p>{data.slug}</p>
-                        </div>
-                        <div>
-                            <p className="font-heading">Title</p>
-                            <p>{data.displayTitle}</p>
-                        </div>
-                        <div>
-                            <p className="font-heading">Status</p>
-                            <p className="font-thin text-xl">{data.status}</p>
-                        </div>
-                        {data.mappedUrl && (
-                            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-                                <p className="font-heading">Mapped URL</p>
-                                <p className="break-all">{data.mappedUrl}</p>
-                                <Button
-                                    onClick={() => copyText(data.mappedUrl!)}
-                                    className="bg-main border-2 border-border shadow-shadow rounded-none"
-                                >
-                                    Copy
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                ) : null}
-
-                {/* Map URL Form */}
-                <div className="border-4 border-border shadow-shadow bg-main p-4 flex flex-col gap-4">
-                    <h2 className="text-xl font-heading">Map Final URL</h2>
-
-                    <select
-                        value={contentType ?? ""}
-                        onChange={(e) => {
-                            setContentType(e.target.value)
-                            setFile(null)
-                            setTargetUrl("")
-                        }}
-                        className="border-2 border-border p-3 shadow-shadow bg-secondary-background"
-                    >
-                        <option value="">Select Content Type</option>
-                        <option value="Post">Post</option>
-                        <option value="File">File</option>
-                    </select>
-
-                    {contentType === "Post" ? (
-                        <input
-                            type="text"
-                            value={targetUrl}
-                            onChange={(e) => setTargetUrl(e.target.value)}
-                            placeholder="https://your-final-work.com"
-                            className="border-2 border-border p-3 shadow-shadow bg-secondary-background"
-                        />
-                    ) : contentType === "File" ? (
-                        <input
-                            type="file"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) setFile(file);
-                            }}
-                            className="border-2 border-border p-3 shadow-shadow bg-secondary-background"
-                        />
-                    ) : null}
-
-                    <Button
-                        onClick={handleMap}
-                        disabled={loading || fetching}
-                        size="lg"
-                        className="w-fit bg-secondary-background border-2 border-border shadow-shadow rounded-none"
-                    >
-                        {loading ? "Mapping..." : "Map URL"}
-                    </Button>
-
-                    {data && (
-                        <Button
-                            onClick={() => navigate(`/l/${data.slug}`)}
-                            disabled={loading || fetching}
-                            size="lg"
-                            className="w-fit bg-main border-2 border-border shadow-shadow rounded-none"
-                        >
-                            Public URL
-                        </Button>
-                    )}
-                </div>
-
-            </div>
-        </div>
-    );
-};
-
-export default ManageUrlPage;
+export default function ManageUrlPage() {
+  const { data, fetchLink, mapUrl, loading, fetching, targetUrl, setTargetUrl, file, setFile, contentType, setContentType } = useManageLinkStore();
+  const { slug } = useParams();
+  useEffect(() => { if (slug) void fetchLink(slug); }, [slug, fetchLink]);
+  const handleMap = async (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!slug || loading) return;
+    if (contentType === "File" && !file) { toast.error("Please choose a file"); return; }
+    if (contentType === "Post" && !targetUrl.trim()) { toast.error("Please enter a destination URL"); return; }
+    if (await mapUrl(slug)) toast.success("Destination updated");
+  };
+  const chooseType = (type: string) => { setContentType(type); setFile(null); setTargetUrl(""); };
+  const publicUrl = slug ? linkPublicUrl(slug) : "";
+  return (
+    <main className="workspace max-w-4xl">
+      <Link to="/get-all" className="quiet-link inline-flex items-center gap-2"><ArrowLeft size={14} /> My links</Link>
+      <div className="mb-9 mt-8"><p className="eyebrow text-zinc-400">Link settings</p><h1 className="mt-3 text-3xl font-medium sm:text-4xl">Connect your work.</h1><p className="mt-3 text-sm leading-6 text-muted-foreground">Update the destination. Keep the link you’ve already shared.</p></div>
+      {fetching ? <div className="panel p-10 text-sm text-muted-foreground" role="status">Loading link details…</div> : !data ? <div className="panel p-8" role="alert"><h2 className="text-lg">This link is unavailable.</h2><p className="mb-5 mt-2 text-sm leading-6 text-muted-foreground">It may have expired, been removed, or belong to a different account.</p><Button variant="outline" onClick={() => slug && fetchLink(slug)}>Try again</Button></div> : <div className="grid items-start gap-6 md:grid-cols-[1fr_260px]">
+        <form onSubmit={handleMap} className="panel p-6 sm:p-8"><h2 className="text-lg font-medium">Destination</h2><p className="mb-6 mt-2 text-sm leading-6 text-muted-foreground">Choose where visitors go when they open your public link.</p>
+          <div className="mb-6 grid grid-cols-2 gap-3" role="group" aria-label="Destination type">{[{type:"Post",label:"Website URL",icon:Globe},{type:"File",label:"Upload a file",icon:FileUp}].map(({type,label,icon:Icon}) => <button type="button" key={type} onClick={() => chooseType(type)} aria-pressed={contentType === type} disabled={loading} className={`flex items-center gap-2 rounded-lg border p-4 text-sm transition-colors disabled:opacity-50 ${contentType === type ? "border-zinc-900 bg-zinc-50 font-medium" : "border-border text-zinc-500 hover:border-zinc-400"}`}><Icon size={16} />{label}</button>)}</div>
+          {contentType === "Post" ? <div><label htmlFor="destination-url" className="field-label">Destination URL</label><input id="destination-url" type="url" required placeholder="https://example.com/your-work" value={targetUrl} onChange={e => setTargetUrl(e.target.value)} disabled={loading} className="field" /><p className="mt-2 text-xs leading-5 text-muted-foreground">Use a full web address, including https://.</p></div> : <div><label htmlFor="destination-file" className="field-label">Choose your file</label><input id="destination-file" type="file" required disabled={loading} onChange={e => setFile(e.target.files?.[0] ?? null)} className="field text-xs file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-medium" /><p className="mt-2 text-xs leading-5 text-muted-foreground">Upload your finished document, image, or supported media file.</p></div>}
+          <div className="mt-7 border-t border-zinc-100 pt-6"><Button type="submit" disabled={loading}>{loading ? "Saving destination…" : data.mappedUrl ? "Update destination" : "Connect destination"}<ArrowUpRight size={15} /></Button><p className="mt-3 text-xs leading-5 text-muted-foreground">{data.mappedUrl ? "This replaces the current destination for everyone with the link." : "Your holding page will redirect visitors once connected."}</p></div>
+        </form>
+        <aside className="panel overflow-hidden"><div className="border-b border-border bg-zinc-50 px-5 py-4"><div className="mb-3 flex items-center gap-2 text-xs text-zinc-500"><Link2 size={13} /> Link overview</div><h2 className="break-words text-base font-medium">{data.displayTitle || "Untitled project"}</h2><span className={`mt-3 ${data.mappedUrl ? "status-ready" : "status-pending"}`}>{data.mappedUrl ? <Check size={11} /> : <span className="size-1.5 rounded-full bg-zinc-400" />}{data.mappedUrl ? "Connected" : "In progress"}</span></div><div className="space-y-5 p-5"><div><h3 className="mb-2 text-xs font-medium tracking-normal">Public link</h3><a href={publicUrl} target="_blank" rel="noreferrer" className="break-all font-mono text-[11px] leading-5 text-zinc-500 hover:text-black">{publicUrl}</a></div>{data.mappedUrl && <div><h3 className="mb-2 text-xs font-medium tracking-normal">Current destination</h3><a href={data.mappedUrl} target="_blank" rel="noreferrer" className="break-all text-xs leading-5 text-zinc-500 hover:text-black">{data.mappedUrl}</a></div>}<Button variant="outline" size="sm" className="w-full" onClick={() => copyLink(publicUrl)}><Copy size={12} /> Copy public link</Button></div></aside>
+      </div>}
+    </main>
+  );
+}
