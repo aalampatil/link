@@ -12,7 +12,7 @@ export default function ThemeToggle() {
         aria-label="Color theme"
         value={mode}
         onChange={(event) => setMode(event.target.value as ThemeMode)}
-        className="h-full appearance-none rounded-lg bg-transparent pr-7 text-xs outline-none focus-visible:outline-offset-2"
+        className="h-full appearance-none rounded-lg bg-secondary-background pr-7 text-xs text-foreground outline-none focus-visible:outline-offset-2 [&_option]:bg-secondary-background [&_option]:text-foreground [&_option:checked]:bg-main [&_option:checked]:text-main-foreground"
       >
         <option value="light">Light</option>
         <option value="dark">Dark</option>
