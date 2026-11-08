@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 export type ThemeMode = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
-export const themeStorageKey = "deadlink-theme";
+export const themeStorageKey = "link-theme";
 
 export function parseTheme(value: string | null): ThemeMode {
   return value === "light" || value === "dark" ? value : "system";

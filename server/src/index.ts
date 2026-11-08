@@ -3,7 +3,6 @@ import { env } from "./env.js";
 export const isProduction = env.NODE_ENV === "production";
 import createApp from "./app.js";
 
-
 const PORT = env.PORT ?? "5000";
 
 if (!isProduction) {
@@ -13,9 +12,7 @@ if (!isProduction) {
 async function main() {
   const app = createApp();
   app.listen(PORT, () => {
-    console.log(
-      `deadlink-ap server listening on :${PORT} in ${env.NODE_ENV} mode`,
-    );
+    console.log(`link server listening on :${PORT} in ${env.NODE_ENV} mode`);
   });
 }
 

@@ -34,6 +34,6 @@ Error handling stays in the component — Toasts are UI side-effects, so the sto
 
 ```
 VITE_BACKEND=http://localhost:5000/api
-VITE_SERVER=https://deadlink-ap.onrender.com/api
+VITE_SERVER=https://link.onrender.com/api
 VITE_CLERK_PUBLISHABLE_KEY=
 ```

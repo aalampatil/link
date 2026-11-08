@@ -93,7 +93,7 @@ function ProductPreview() {
         <div className="grid sm:grid-cols-[180px_1fr]">
           <div className="hidden border-r border-border bg-muted p-5 sm:block">
             <div className="mb-8 flex items-center gap-2 text-sm font-semibold">
-              <Link2 size={16} /> deadlink
+              <Link2 size={16} /> link
             </div>
             <div className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-xs font-medium">
               <Link2 size={13} /> My links{" "}
@@ -138,7 +138,7 @@ function ProductPreview() {
               </p>
               <p className="flex items-center gap-2 break-all font-mono text-xs sm:text-sm">
                 <Link2 size={13} className="shrink-0 text-muted-foreground" />{" "}
-                deadlink.app/l/portfolio-2026
+                link.app/l/portfolio-2026
               </p>
             </div>
             <div className="my-3 ml-6 h-5 border-l border-dashed border-border" />

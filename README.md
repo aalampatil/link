@@ -1,4 +1,4 @@
-# DeadLink
+# link
 
 A deadline submission management service. Users get a placeholder link they can share immediately — before their actual submission is ready. When the submission is ready, they map it to the placeholder and anyone with the link gets the real content.
 
@@ -7,11 +7,11 @@ A deadline submission management service. Users get a placeholder link they can 
 ## How It Works
 
 ```
-1. User creates a placeholder link  →  deadlink.app/s/abc123
+1. User creates a placeholder link  →  link.app/s/abc123
 2. User shares that link publicly (in emails, docs, portfolios etc.)
 3. User finishes their submission
 4. User maps the real submission URL to their placeholder
-5. Anyone visiting deadlink.app/s/abc123 now gets redirected to the real content
+5. Anyone visiting link.app/s/abc123 now gets redirected to the real content
 ```
 
 No broken links. No "coming soon" pages. The placeholder link always works.
@@ -58,16 +58,16 @@ change; release dates have not been set.
 
 ### Server
 
-| Package              | Purpose                              |
-| -------------------- | ------------------------------------ |
-| `express`            | HTTP server                          |
-| `drizzle-orm` + `pg` | Primary database ORM + PostgreSQL    |
-| `@clerk/express`     | Authentication                       |
-| `cloudinary`         | Uploaded file storage                |
-| `nanoid`             | Short unique link ID generation      |
-| `zod`                | Request validation                   |
-| `express-rate-limit` | Rate limiting                        |
-| `typescript`         | Type safety                          |
+| Package              | Purpose                           |
+| -------------------- | --------------------------------- |
+| `express`            | HTTP server                       |
+| `drizzle-orm` + `pg` | Primary database ORM + PostgreSQL |
+| `@clerk/express`     | Authentication                    |
+| `cloudinary`         | Uploaded file storage             |
+| `nanoid`             | Short unique link ID generation   |
+| `zod`                | Request validation                |
+| `express-rate-limit` | Rate limiting                     |
+| `typescript`         | Type safety                       |
 
 ### Client
 
@@ -81,7 +81,7 @@ change; release dates have not been set.
 ## Project Structure
 
 ```
-deadlink-ap/
+link/
 ├── client/          # Frontend
 └── server/          # Backend API
     ├── src/
@@ -104,8 +104,8 @@ deadlink-ap/
 ### Installation
 
 ```bash
-git clone https://github.com/aalampatil/deadlink-ap.git
-cd deadlink-ap/server
+git clone https://github.com/aalampatil/link.git
+cd link/server
 npm install
 ```
 
@@ -117,7 +117,7 @@ Create a `.env` file in `server/`:
 PORT=3000
 
 # PostgreSQL
-DATABASE_URL=postgresql://user:password@localhost:5432/deadlink
+DATABASE_URL=postgresql://user:password@localhost:5432/link
 
 # Clerk
 CLERK_PUBLISHABLE_KEY=pk_test_...
@@ -136,10 +136,10 @@ For production, create `.env.production` with the same keys pointing to your pro
 ```bash
 # PostgreSQL
 docker run -d \
-  --name deadlink-pg \
+  --name link-pg \
   -e POSTGRES_USER=user \
   -e POSTGRES_PASSWORD=password \
-  -e POSTGRES_DB=deadlink \
+  -e POSTGRES_DB=link \
   -p 5432:5432 \
   postgres:16-alpine
 
@@ -154,7 +154,7 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: deadlink
+      POSTGRES_DB: link
     ports:
       - "5432:5432"
     volumes:

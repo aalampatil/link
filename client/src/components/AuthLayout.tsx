@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           to="/"
           className="flex w-fit items-center gap-2.5 text-xl font-semibold tracking-tight"
         >
-          <Link2 size={21} /> deadlink
+          <Link2 size={21} /> link
         </Link>
         <div className="max-w-md">
           <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -36,7 +36,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           to="/"
           className="quiet-link absolute left-6 top-8 inline-flex items-center gap-2 sm:left-10"
         >
-          <ArrowLeft size={14} /> Back to Deadlink
+          <ArrowLeft size={14} /> Back to link
         </Link>
         <div className="absolute right-6 top-8 sm:right-10">
           <ThemeToggle />

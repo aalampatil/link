@@ -11,13 +11,13 @@ export default function Header() {
       <div className="page-container flex min-h-18 flex-wrap items-center justify-between gap-x-4 gap-y-3 py-4 sm:flex-nowrap sm:py-0">
         <Link
           to="/"
-          aria-label="Deadlink home"
+          aria-label="link home"
           className="flex items-center gap-2.5 text-xl font-semibold tracking-tight"
         >
           <span className="flex size-8 items-center justify-center rounded-lg bg-main text-main-foreground">
             <Link2 size={19} strokeWidth={2.2} />
           </span>
-          deadlink
+          link
         </Link>
         <nav
           aria-label="Main navigation"

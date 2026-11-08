@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="mt-auto border-t border-border bg-background">
       <div className="page-container flex flex-col gap-5 py-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <Link2 size={17} className="text-main" /> deadlink
+          <Link2 size={17} className="text-main" /> link
           <span className="ml-2 font-normal text-muted-foreground">
             A link for what comes next.
           </span>
@@ -18,7 +18,7 @@ export default function Footer() {
           <Link to="/get-all" className="hover:text-foreground">
             My links
           </Link>
-          <span>© {new Date().getFullYear()} Deadlink</span>
+          <span>© {new Date().getFullYear()} link</span>
         </div>
       </div>
     </footer>

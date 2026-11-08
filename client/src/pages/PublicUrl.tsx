@@ -55,7 +55,7 @@ export default function PublicUrl() {
             : data
               ? "The owner has created a place for their work. Once it’s connected, this link will take you straight there."
               : error ||
-                "It may have expired or been removed. Check the address with the person who shared it."}
+              "It may have expired or been removed. Check the address with the person who shared it."}
         </p>
         {!isLoading && (
           <div className="mt-7">
@@ -72,7 +72,7 @@ export default function PublicUrl() {
               </>
             ) : (
               <>
-                <ArrowLeft size={13} /> Back to Deadlink
+                <ArrowLeft size={13} /> Back to Link
               </>
             )}
           </Link>
