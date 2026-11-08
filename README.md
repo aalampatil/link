@@ -218,6 +218,19 @@ After pushing changes, redeploy the latest commit on Render.
 
 ---
 
+### Deploy the Client on Vercel
+
+Set the project root directory to `client`, use the Vite framework preset,
+build with `npm run build`, and publish `dist`.
+
+Set `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_SERVER` in the Vercel environment.
+`VITE_SERVER` must point to the Render backend including `/api`, for example
+`https://your-service.onrender.com/api`. Redeploy after changing these values.
+
+`client/vercel.json` serves `index.html` for frontend routes so direct visits
+and refreshes on `/get-all`, `/manage/:slug`, `/l/:slug`, and authentication
+pages reach React Router.
+
 ## Scripts
 
 | Script                    | Description                          |
