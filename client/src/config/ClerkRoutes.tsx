@@ -9,14 +9,14 @@ export default function ClerkRoutes() {
       publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
       appearance={{
         variables: {
-          colorPrimary: dark ? "#fafafa" : "#18181b",
-          colorPrimaryForeground: dark ? "#18181b" : "#ffffff",
-          colorBackground: dark ? "#111113" : "#ffffff",
-          colorForeground: dark ? "#fafafa" : "#18181b",
-          colorMutedForeground: dark ? "#a1a1aa" : "#71717a",
-          colorInput: dark ? "#18181b" : "#ffffff",
-          colorInputForeground: dark ? "#fafafa" : "#18181b",
-          colorNeutral: dark ? "#fafafa" : "#18181b",
+          colorPrimary: dark ? "#ffffff" : "#000000",
+          colorPrimaryForeground: dark ? "#000000" : "#ffffff",
+          colorBackground: dark ? "#000000" : "#ffffff",
+          colorForeground: dark ? "#ffffff" : "#000000",
+          colorMutedForeground: dark ? "#ffffff" : "#000000",
+          colorInput: dark ? "#000000" : "#ffffff",
+          colorInputForeground: dark ? "#ffffff" : "#000000",
+          colorNeutral: dark ? "#ffffff" : "#000000",
           fontFamily: '"Geist Variable", sans-serif',
           borderRadius: "0.65rem",
         },

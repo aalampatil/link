@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 export default function Header() {
   const { pathname } = useLocation();
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-border bg-background">
       <div className="page-container flex min-h-18 flex-wrap items-center justify-between gap-x-4 gap-y-3 py-4 sm:flex-nowrap sm:py-0">
         <Link
           to="/"

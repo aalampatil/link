@@ -63,7 +63,7 @@ function ProductPreview() {
         <button
           onClick={() => setConnected(false)}
           aria-pressed={!connected}
-          className={`rounded-full px-4 py-2 text-xs transition-colors ${!connected ? "bg-main text-main-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+          className={`rounded-full px-4 py-2 text-xs transition-colors ${!connected ? "bg-main text-main-foreground" : "text-muted-foreground hover:bg-main hover:text-main-foreground"}`}
         >
           Before it’s ready
         </button>
@@ -71,17 +71,17 @@ function ProductPreview() {
         <button
           onClick={() => setConnected(true)}
           aria-pressed={connected}
-          className={`rounded-full px-4 py-2 text-xs transition-colors ${connected ? "bg-main text-main-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+          className={`rounded-full px-4 py-2 text-xs transition-colors ${connected ? "bg-main text-main-foreground" : "text-muted-foreground hover:bg-main hover:text-main-foreground"}`}
         >
           When it’s ready
         </button>
       </div>
       <div className="overflow-hidden rounded-xl border border-border bg-secondary-background text-left shadow-[var(--preview-shadow)]">
-        <div className="flex items-center justify-between border-b border-border bg-muted/70 px-5 py-3.5">
+        <div className="flex items-center justify-between border-b border-border bg-muted px-5 py-3.5">
           <div className="flex gap-1.5" aria-hidden="true">
-            <span className="size-2 rounded-full bg-zinc-300" />
-            <span className="size-2 rounded-full bg-zinc-300" />
-            <span className="size-2 rounded-full bg-zinc-300" />
+            <span className="size-2 rounded-full bg-foreground" />
+            <span className="size-2 rounded-full bg-foreground" />
+            <span className="size-2 rounded-full bg-foreground" />
           </div>
           <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <LockKeyhole size={10} /> Your workspace
@@ -91,11 +91,11 @@ function ProductPreview() {
           </span>
         </div>
         <div className="grid sm:grid-cols-[180px_1fr]">
-          <div className="hidden border-r border-border bg-muted/40 p-5 sm:block">
+          <div className="hidden border-r border-border bg-muted p-5 sm:block">
             <div className="mb-8 flex items-center gap-2 text-sm font-semibold">
               <Link2 size={16} /> deadlink
             </div>
-            <div className="flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-xs font-medium">
+            <div className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-xs font-medium">
               <Link2 size={13} /> My links{" "}
               <span className="ml-auto text-muted-foreground">1</span>
             </div>
@@ -127,7 +127,7 @@ function ProductPreview() {
                 {connected ? (
                   <Check size={11} />
                 ) : (
-                  <span className="size-1.5 rounded-full bg-zinc-400" />
+                  <span className="size-1.5 rounded-full bg-foreground" />
                 )}
                 {connected ? "Connected" : "Awaiting destination"}
               </span>
@@ -148,7 +148,7 @@ function ProductPreview() {
               aria-live="polite"
             >
               <span
-                className={`flex size-9 shrink-0 items-center justify-center rounded-md ${connected ? "bg-main-foreground/10" : "bg-secondary-background border border-border"}`}
+                className={`flex size-9 shrink-0 items-center justify-center rounded-md ${connected ? "border border-main-foreground" : "bg-secondary-background border border-border"}`}
               >
                 {connected ? (
                   <Globe size={16} />
@@ -161,7 +161,7 @@ function ProductPreview() {
                   {connected ? "portfolio.example.com" : "Your work goes here"}
                 </p>
                 <p
-                  className={`mt-1 text-[10px] ${connected ? "text-main-foreground/70" : "text-muted-foreground"}`}
+                  className={`mt-1 text-[10px] ${connected ? "text-main-foreground" : "text-muted-foreground"}`}
                 >
                   {connected
                     ? "Visitors now go directly to your work."
@@ -188,7 +188,7 @@ export default function Homepage() {
     <main>
       <section className="page-container pb-20 pt-16 text-center sm:pb-28 sm:pt-24">
         <div className="hero-enter mx-auto mb-7 flex w-fit items-center gap-2 rounded-full border border-border px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-          <span className="size-1.5 rounded-full bg-zinc-800" /> A little more
+          <span className="size-1.5 rounded-full bg-foreground" /> A little more
           room to finish.
         </div>
         <h1 className="hero-enter mx-auto max-w-4xl text-[clamp(2.9rem,7.8vw,6.2rem)] font-medium leading-[1.04] tracking-[-0.065em]">
@@ -215,7 +215,7 @@ export default function Homepage() {
         </div>
         <ProductPreview />
       </section>
-      <section className="border-y border-border bg-muted/60">
+      <section className="border-y border-border bg-muted">
         <div className="page-container flex flex-col items-center justify-between gap-5 py-7 sm:flex-row">
           <p className="text-xs text-muted-foreground">
             For the work that’s still in progress.
@@ -285,7 +285,7 @@ export default function Homepage() {
               Make room for your next project <ArrowRight size={15} />
             </Link>
           </div>
-          <div className="flex flex-col justify-center divide-y divide-border px-8 sm:px-12">
+          <div className="flex flex-col justify-center border-t border-border md:border-l md:border-t-0 divide-y divide-border px-8 sm:px-12">
             {[
               {
                 icon: Link2,
@@ -373,7 +373,7 @@ export default function Homepage() {
           <Button
             asChild
             size="lg"
-            className="rounded-full bg-main px-7 text-main-foreground hover:bg-main/90"
+            className="rounded-full bg-main px-7 text-main-foreground border-main hover:bg-main-foreground hover:text-main"
           >
             <Link to="/create-link">
               Create a link <ArrowUpRight size={16} />

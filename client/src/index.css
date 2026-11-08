@@ -13,34 +13,34 @@
   -webkit-font-smoothing: antialiased;
   --background: #ffffff;
   --secondary-background: #ffffff;
-  --foreground: #18181b;
-  --main: #18181b;
+  --foreground: #000000;
+  --main: #000000;
   --main-foreground: #ffffff;
-  --border: #e4e4e7;
-  --ring: #71717a;
-  --shadow: 0 4px 20px #00000008;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #27272a;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --destructive: #b23d37;
-  --preview-shadow: 0 20px 80px -25px #00000020;
+  --border: #000000;
+  --ring: #000000;
+  --shadow: none;
+  --secondary: #ffffff;
+  --secondary-foreground: #000000;
+  --muted: #ffffff;
+  --muted-foreground: #000000;
+  --destructive: #000000;
+  --preview-shadow: none;
 }
 [data-theme="dark"] {
-  --background: #09090b;
-  --secondary-background: #111113;
-  --foreground: #fafafa;
-  --main: #fafafa;
-  --main-foreground: #18181b;
-  --border: #2c2c30;
-  --ring: #a1a1aa;
-  --shadow: 0 4px 20px #00000030;
-  --secondary: #27272a;
-  --secondary-foreground: #e4e4e7;
-  --muted: #18181b;
-  --muted-foreground: #a1a1aa;
-  --destructive: #f87171;
-  --preview-shadow: 0 20px 80px -25px #00000080;
+  --background: #000000;
+  --secondary-background: #000000;
+  --foreground: #ffffff;
+  --main: #ffffff;
+  --main-foreground: #000000;
+  --border: #ffffff;
+  --ring: #ffffff;
+  --shadow: none;
+  --secondary: #000000;
+  --secondary-foreground: #ffffff;
+  --muted: #000000;
+  --muted-foreground: #ffffff;
+  --destructive: #ffffff;
+  --preview-shadow: none;
 }
 @theme inline {
   --font-sans: "Geist Variable", sans-serif;
@@ -118,21 +118,23 @@
     @apply mb-2 block text-sm font-medium;
   }
   .field {
-    @apply w-full rounded-lg border border-border bg-secondary-background px-3.5 py-3 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/10 disabled:opacity-50;
+    @apply w-full rounded-lg border border-border bg-secondary-background px-3.5 py-3 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring disabled:opacity-50;
   }
   .status-ready {
-    @apply inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-foreground;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-foreground;
   }
   .status-pending {
-    @apply inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground;
   }
   .inverse-surface {
-    background: #09090b;
-    color: #fafafa;
-    --foreground: #fafafa;
-    --main: #fafafa;
-    --main-foreground: #18181b;
-    --muted-foreground: #a1a1aa;
+    background: #000000;
+    color: #ffffff;
+    --border: #ffffff;
+    --ring: #ffffff;
+    --foreground: #ffffff;
+    --main: #ffffff;
+    --main-foreground: #000000;
+    --muted-foreground: #ffffff;
   }
   .quiet-link {
     @apply text-sm text-muted-foreground transition-colors hover:text-foreground;

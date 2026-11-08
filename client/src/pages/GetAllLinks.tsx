@@ -87,7 +87,7 @@ export default function GetAllLinks() {
           </Link>
         </Button>
       </div>
-      <div className="my-9 grid grid-cols-3 divide-x divide-zinc-200 border-y border-border py-6">
+      <div className="my-9 grid grid-cols-3 divide-x divide-border border-y border-border py-6">
         {[
           { label: "Total links", value: links.length },
           {
@@ -160,7 +160,7 @@ export default function GetAllLinks() {
           {filtered.map((link) => (
             <article
               key={link.id}
-              className="panel p-5 transition-shadow hover:shadow-sm sm:p-6"
+              className="panel p-5 transition-transform hover:-translate-y-px sm:p-6"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
@@ -182,7 +182,7 @@ export default function GetAllLinks() {
                   {link.mappedUrl ? (
                     <Check size={11} />
                   ) : (
-                    <span className="size-1.5 rounded-full bg-zinc-400" />
+                    <span className="size-1.5 rounded-full bg-foreground" />
                   )}
                   {link.mappedUrl ? "Connected" : "In progress"}
                 </span>

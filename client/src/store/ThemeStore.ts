@@ -26,7 +26,7 @@ function applyTheme(theme: ResolvedTheme) {
   document.documentElement.style.colorScheme = theme;
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", theme === "dark" ? "#09090b" : "#ffffff");
+    ?.setAttribute("content", theme === "dark" ? "#000000" : "#ffffff");
 }
 
 type ThemeState = {

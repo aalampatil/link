@@ -106,7 +106,7 @@ export default function ManageUrlPage() {
                   onClick={() => chooseType(type)}
                   aria-pressed={contentType === type}
                   disabled={loading}
-                  className={`flex items-center gap-2 rounded-lg border p-4 text-sm transition-colors disabled:opacity-50 ${contentType === type ? "border-main bg-muted font-medium" : "border-border text-muted-foreground hover:border-zinc-400"}`}
+                  className={`flex items-center gap-2 rounded-lg border p-4 text-sm transition-colors disabled:opacity-50 ${contentType === type ? "border-main bg-main text-main-foreground font-medium" : "border-border text-muted-foreground hover:border-main"}`}
                 >
                   <Icon size={16} />
                   {label}
@@ -180,7 +180,7 @@ export default function ManageUrlPage() {
                 {data.mappedUrl ? (
                   <Check size={11} />
                 ) : (
-                  <span className="size-1.5 rounded-full bg-zinc-400" />
+                  <span className="size-1.5 rounded-full bg-foreground" />
                 )}
                 {data.mappedUrl ? "Connected" : "In progress"}
               </span>
