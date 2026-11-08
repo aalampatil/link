@@ -76,7 +76,7 @@ function ProductPreview() {
           When it’s ready
         </button>
       </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-secondary-background text-left shadow-[var(--preview-shadow)]">
+      <div className="overflow-hidden rounded-xl border border-border bg-secondary-background text-left shadow-(--preview-shadow)">
         <div className="flex items-center justify-between border-b border-border bg-muted px-5 py-3.5">
           <div className="flex gap-1.5" aria-hidden="true">
             <span className="size-2 rounded-full bg-foreground" />

@@ -199,6 +199,23 @@ npm run build
 npm run start
 ```
 
+### Deploy the Server on Render
+
+Configure the Node web service with:
+
+- Root directory: `server`
+- Build command: `npm ci --include=dev && npm run build`
+- Start command: `npm start`
+- Environment: `NODE_ENV=production`, plus the required service credentials and
+  `CLIENT` set to the frontend origin.
+
+The TypeScript compiler and `@types/*` declarations are development dependencies
+needed at build time. `server/.npmrc` includes them even when
+`NODE_ENV=production`; omitting them causes missing declaration errors for
+Express, CORS, and Multer. Keep production mode enabled at runtime.
+
+After pushing changes, redeploy the latest commit on Render.
+
 ---
 
 ## Scripts
