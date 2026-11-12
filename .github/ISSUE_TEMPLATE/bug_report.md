@@ -1,40 +1,47 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a reproducible problem with Link
 title: ""
 labels: ""
 assignees: ""
 ---
 
+<!-- For vulnerabilities, follow https://github.com/aalampatil/link/security/policy
+instead of opening a public issue. Redact credentials, session tokens, private
+links, and user data from logs and screenshots. -->
+
+**Before reporting**
+
+- [ ] I searched existing issues for this problem.
+- [ ] This is a bug report, not a private security report.
+- [ ] I read the contributing guide and code of conduct.
+
 **Describe the bug**
-A clear and concise description of what the bug is.
+Explain what went wrong and which part of Link is affected (frontend, API,
+uploads, public links, or setup).
 
 **To Reproduce**
 Steps to reproduce the behavior:
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. Start with '...'
+2. Perform '...'
+3. Observe '...'
+
+Include a minimal reproduction using your own test account and data.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Actual behavior and evidence**
+Include the observed result, relevant redacted errors, and screenshots if useful.
 
-**Desktop (please complete the following information):**
+**Environment**
 
-- OS: [e.g. iOS]
-- Browser [e.g. chrome, safari]
-- Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
-
-- Device: [e.g. iPhone6]
-- OS: [e.g. iOS8.1]
-- Browser [e.g. stock browser, safari]
-- Version [e.g. 22]
+- Commit or version (if known):
+- Local setup or hosted deployment:
+- OS and device:
+- Browser and version:
+- Node.js and npm versions (for local setup):
 
 **Additional context**
 Add any other context about the problem here.

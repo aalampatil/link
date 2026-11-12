@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/aalampatil/link/security/policy
+    about: Follow the security policy instead of posting sensitive details in an issue.
+  - name: Contributing and local setup
+    url: https://github.com/aalampatil/link/blob/main/CONTRIBUTING.md
+    about: Read the contribution process and development instructions.

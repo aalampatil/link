@@ -1,10 +1,15 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest an improvement to Link
 title: ""
 labels: ""
 assignees: ""
 ---
+
+**Before requesting**
+
+- [ ] I searched existing issues and the README roadmap for this idea.
+- [ ] I read the contributing guide and code of conduct.
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]

@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "API for Link, a deadline submission service for sharing placeholder links and connecting URLs or files later.",
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsc-watch --onSuccess \" node dist/index.js \"",
@@ -14,7 +14,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "@clerk/express": "^2.0.7",

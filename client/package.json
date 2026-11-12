@@ -1,5 +1,7 @@
 {
   "name": "client",
+  "description": "Web client for Link, a deadline submission service for sharing placeholder links and connecting URLs or files later.",
+  "license": "MIT",
   "private": true,
   "version": "0.0.0",
   "type": "module",

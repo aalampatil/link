@@ -1,20 +1,24 @@
-# link
+# Link
 
 A deadline submission management service. Users get a placeholder link they can share immediately — before their actual submission is ready. When the submission is ready, they map it to the placeholder and anyone with the link gets the real content.
+
+[Contributing](CONTRIBUTING.md) · [Code of conduct](CODE_OF_CONDUCT.md) ·
+[Security policy](SECURITY.md) · [MIT license](License)
 
 ---
 
 ## How It Works
 
 ```
-1. User creates a placeholder link  →  link.app/s/abc123
+1. User creates a placeholder link  →  <frontend-origin>/l/abc123
 2. User shares that link publicly (in emails, docs, portfolios etc.)
 3. User finishes their submission
 4. User maps the real submission URL to their placeholder
-5. Anyone visiting link.app/s/abc123 now gets redirected to the real content
+5. Anyone visiting that link now gets redirected to the real content
 ```
 
-No broken links. No "coming soon" pages. The placeholder link always works.
+Until a destination is connected, visitors see a holding page. Expired or
+deleted links show an unavailable message.
 
 ---
 
@@ -71,10 +75,14 @@ change; release dates have not been set.
 
 ### Client
 
-|            |                |
-| ---------- | -------------- |
-| TypeScript | Frontend logic |
-| CSS        | Styling        |
+| Package | Purpose |
+| ------- | ------- |
+| React + TypeScript | Frontend components and logic |
+| Vite | Development server and production builds |
+| Tailwind CSS | Styling |
+| React Router | Client-side routing |
+| Zustand | Client state |
+| Clerk | Sign-in and sessions |
 
 ---
 
@@ -96,8 +104,8 @@ link/
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL database
+- Node.js 22.12+ and npm (the frontend dependencies require this minimum on Node 22)
+- Docker with Compose for the local PostgreSQL database, or your own PostgreSQL database
 - A [Clerk](https://clerk.com) account for auth
 - A Cloudinary account for file uploads
 
@@ -105,19 +113,30 @@ link/
 
 ```bash
 git clone https://github.com/aalampatil/link.git
-cd link/server
-npm install
+cd link
+npm --prefix server ci
+npm --prefix client ci
 ```
 
 ### Environment Variables
 
-Create a `.env` file in `server/`:
+Copy `server/.env.sample` to `server/.env` and `client/.env.example` to
+`client/.env`. On PowerShell:
+
+```powershell
+Copy-Item server/.env.sample server/.env
+Copy-Item client/.env.example client/.env
+```
+
+Set the server values in `server/.env`:
 
 ```env
-PORT=3000
+PORT=5000
+NODE_ENV=development
+CLIENT=http://localhost:5173
 
 # PostgreSQL
-DATABASE_URL=postgresql://user:password@localhost:5432/link
+DATABASE_URL=postgresql://ADMIN:ADMIN@localhost:5434/link
 
 # Clerk
 CLERK_PUBLISHABLE_KEY=pk_test_...
@@ -129,43 +148,31 @@ CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
 ```
 
-For production, create `.env.production` with the same keys pointing to your production databases.
+Set the client values in `client/.env`:
+
+```env
+VITE_SERVER=http://localhost:5000/api
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+```
+
+Use publishable and secret keys from the same Clerk development instance.
+`VITE_SERVER` includes `/api`; `CLIENT` is the frontend origin without `/api`.
+Keep secret keys and database credentials in the server environment. Vite
+variables are included in the browser bundle and must never contain secrets.
+
+For production, configure these values through your hosting environment.
+The `db:migrate:prod` script reads `server/.env.production` when run locally.
 
 ### Run Databases with Docker
 
-```bash
-# PostgreSQL
-docker run -d \
-  --name link-pg \
-  -e POSTGRES_USER=user \
-  -e POSTGRES_PASSWORD=password \
-  -e POSTGRES_DB=link \
-  -p 5432:5432 \
-  postgres:16-alpine
-
-```
-
-Or with Docker Compose:
-
-```yaml
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: link
-    ports:
-      - "5432:5432"
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-volumes:
-  pg_data:
-```
+Use the existing Compose file from the repository root:
 
 ```bash
-docker compose up -d
+docker compose -f server/docker-compose.yml up -d
 ```
+
+This runs PostgreSQL 17 on port `5434`, with database `link` and the local
+development credentials shown above. Use separate credentials for production.
 
 ### Database Migrations
 
@@ -174,30 +181,38 @@ its data. Back up any card data you want to keep before applying it. Link data i
 unaffected.
 
 ```bash
-# Generate migrations from schema
-npm run db:generate
-
-# Run migrations (dev)
-npm run db:migrate
-
-# Run migrations (production)
-npm run db:migrate:prod
+# Apply existing migrations to your local database
+npm --prefix server run db:migrate
 ```
 
-### Run Dev Server
+Generate new migrations only when changing the schema; see
+[the contributing guide](CONTRIBUTING.md#database-changes).
+
+### Run the App
+
+Run these in separate terminals from the repository root:
 
 ```bash
-npm run dev
+# Terminal 1: API at http://localhost:5000
+npm --prefix server run dev
+
+# Terminal 2: frontend at http://localhost:5173
+npm --prefix client run dev
 ```
 
-Server starts with hot reload via `tsc-watch` — any TypeScript change recompiles and restarts automatically.
+The API restarts on TypeScript changes through `tsc-watch`; Vite reloads the
+frontend. Use the frontend URL to sign in and create links.
 
 ### Build for Production
 
 ```bash
-npm run build
-npm run start
+npm --prefix server run build
+npm --prefix client run build
+npm --prefix server start
 ```
+
+The API build is written to `server/dist/`, and the frontend build to
+`client/dist/`. Host the frontend separately from the API.
 
 ### Deploy the Server on Render
 
@@ -233,6 +248,9 @@ pages reach React Router.
 
 ## Scripts
 
+The following scripts run from `server/`, or use `npm --prefix server run <script>`
+from the repository root:
+
 | Script                    | Description                          |
 | ------------------------- | ------------------------------------ |
 | `npm run dev`             | Start dev server with hot reload     |
@@ -242,6 +260,9 @@ pages reach React Router.
 | `npm run db:migrate`      | Run migrations (dev)                 |
 | `npm run db:migrate:prod` | Run migrations against production DB |
 | `npm run db:studio`       | Open Drizzle Studio to inspect DB    |
+
+From `client/`, use `npm run dev` for Vite, `npm run build` for the production
+build, and `npm run preview` to preview that build locally.
 
 ---
 
@@ -256,3 +277,17 @@ Auth is handled by [Clerk](https://clerk.com). Users sign in via Clerk and all p
 PostgreSQL (via Drizzle) stores link metadata, ownership, mappings, and status.
 
 Cloudinary stores uploaded files. The database keeps each uploaded file's secure URL and public ID so it can be served and deleted later.
+
+## Community
+
+Contributions, bug reports, and feature ideas are welcome. Read the
+[contributing guide](CONTRIBUTING.md) for local setup, validation, and the pull
+request process. Participation follows our [code of conduct](CODE_OF_CONDUCT.md).
+
+Use the [issue templates](https://github.com/aalampatil/link/issues/new/choose)
+for bugs and feature requests. Report vulnerabilities privately using the
+[security policy](SECURITY.md).
+
+## License
+
+Link is licensed under the [MIT License](License), copyright 2026 Aalam Patil.
