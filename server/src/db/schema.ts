@@ -27,6 +27,8 @@ export const linksTable = pgTable("links", {
   reminderHours: integer("reminder_hours").notNull().default(24),
   remindersEnabled: boolean("reminders_enabled").notNull().default(false),
   reminderEmail: varchar("reminder_email", { length: 320 }),
+  scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+  scheduledDestination: jsonb("scheduled_destination").$type<Destination>(),
   mappedUrl: varchar("mapped_url", { length: 2048 }),
   mappedOn: timestamp("mapped_on", { withTimezone: true }),
   publicUrl: varchar("public_url", { length: 2048 }).notNull(),
@@ -84,3 +86,10 @@ export const mailJobs = pgTable("mail_jobs", {
   attempts: integer("attempts").notNull().default(0),
   lastError: varchar("last_error", { length: 255 }),
 }, table => [index("mail_jobs_due_idx").on(table.dueAt)]);
+
+export const linkAssets = pgTable("link_assets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  linkId: uuid("link_id").notNull().references(() => linksTable.id, { onDelete: "cascade" }),
+  publicId: varchar("public_id", { length: 2048 }).notNull(),
+  resourceType: varchar("resource_type", { length: 10 }).notNull(),
+}, table => [index("link_assets_link_idx").on(table.linkId)]);

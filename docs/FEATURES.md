@@ -64,6 +64,15 @@ after SMTP accepts a message but before its database commit may cause a retry.
 SIGTERM/SIGINT stop polling, finish in-flight work, then close connections.
 Scheduling and background alerts require a running API job loop or worker.
 
+## Scheduled publishing
+
+The destination form accepts an optional local publishing time for a URL or
+uploaded file. The current destination stays public; drafts remain owner-only.
+Publication runs in the job loop, retains the previous destination in history,
+and keeps a paused link paused. Owners can cancel a schedule. Publishing or
+restoring a destination immediately clears an older schedule. Extend expiry
+before scheduling beyond it. Retained draft uploads are removed on link deletion.
+
 ## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests

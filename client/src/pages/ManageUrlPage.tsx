@@ -20,6 +20,7 @@ import PausePanel from "@/features/links/PausePanel";
 import HistoryPanel from "@/features/links/HistoryPanel";
 import ActivityPanel from "@/features/links/ActivityPanel";
 import DeadlinePanel from "@/features/links/DeadlinePanel";
+import SchedulePanel from "@/features/links/SchedulePanel";
 
 export default function ManageUrlPage() {
   const [tab, setTab] = useState("destination");
@@ -35,6 +36,7 @@ export default function ManageUrlPage() {
     setFile,
     contentType,
     setContentType,
+    scheduledAt, setScheduledAt,
   } = useManageLinkStore();
   const { slug } = useParams();
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function ManageUrlPage() {
     }
     if (await mapUrl(slug)) {
       form.reset();
-      toast.success("Destination updated");
+      toast.success(scheduledAt ? "Destination scheduled" : "Destination updated");
     }
   };
   const chooseType = (type: string) => {
@@ -165,9 +167,13 @@ export default function ManageUrlPage() {
               </div>
             )}
             <div className="mt-7 border-t border-border pt-6">
+              <label htmlFor="publish-at" className="field-label">Publish at (optional, your local time)</label>
+              <input id="publish-at" className="field mb-3" type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} disabled={loading} />
+              <p className="mb-4 text-xs">Leave empty to publish now. Scheduled work remains private until publication.</p>
               <Button type="submit" disabled={loading}>
                 {loading
                   ? "Saving destination…"
+                  : scheduledAt ? "Schedule publication"
                   : data.mappedUrl
                     ? "Update destination"
                     : "Connect destination"}
@@ -181,6 +187,7 @@ export default function ManageUrlPage() {
             </div>
           </form>
           }
+          {tab === "destination" && <SchedulePanel link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "settings" && <HoldingPanel key={data.updatedAt} link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "settings" && <PausePanel link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "settings" && <DeadlinePanel link={data} onUpdated={() => fetchLink(slug!)} />}

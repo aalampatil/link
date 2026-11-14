@@ -32,6 +32,8 @@ export type LinkData = {
   reminderHours: number;
   remindersEnabled: boolean;
   capabilities?: { email: boolean };
+  scheduledAt: string | null;
+  scheduledDestination: { mappedUrl: string } | null;
 };
 
 //#region 1
@@ -116,6 +118,8 @@ type ManageLinkStore = {
   contentType: string | null;
   file: File | null;
   targetUrl: string;
+  scheduledAt: string;
+  setScheduledAt: (value: string) => void;
   loading: boolean;
   fetching: boolean;
 
@@ -129,6 +133,8 @@ type ManageLinkStore = {
 export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
   data: null,
   targetUrl: "",
+  scheduledAt: "",
+  setScheduledAt: (value) => set({ scheduledAt: value }),
   contentType: "Post",
   file: null,
 
@@ -155,6 +161,7 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
         targetUrl: "",
         file: null,
         contentType: "Post",
+        scheduledAt: "",
       });
       const res = await axiosApi.get(`/link/manage/${slug}`);
       set({
@@ -182,6 +189,7 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
       formdata.append("contentType", contentType);
       if (targetUrl) formdata.append("targetUrl", targetUrl);
       if (file) formdata.append("file", file);
+      if (get().scheduledAt) formdata.append("scheduledAt", new Date(get().scheduledAt).toISOString());
 
       const res = await axiosApi.post(`/link/${slug}/map`, formdata, {
         headers: {
@@ -193,6 +201,7 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
         data: { ...get().data!, ...res.data },
         targetUrl: "",
         file: null,
+        scheduledAt: "",
       });
       return true;
     } catch (err: unknown) {

@@ -6,6 +6,7 @@ import { linksTable } from "../src/db/schema.js";
 import { enqueueReminders } from "../src/jobs/reminders.js";
 import { processMailJobs } from "../src/jobs/mail.js";
 import { mailJobs } from "../src/db/schema.js";
+import { publishScheduled } from "../src/jobs/publishing.js";
 let app: Awaited<ReturnType<typeof testApp>>;
 let slug: string;
 before(async () => {
@@ -106,4 +107,22 @@ test("reminders deduplicate, retry delivery failures, and cancel stale jobs", as
   await db.update(linksTable).set({ mappedUrl: "https://example.com/finished" }).where(eq(linksTable.slug, slug));
   await processMailJobs(async mail => { delivered.push(mail.subject); }, new Date(now.getTime() + 120000));
   assert.equal(delivered.length, 2);
+});
+
+test("scheduled destinations stay private, publish once when due, and can be cancelled", async () => {
+  const scheduledAt = new Date(Date.now() + 3600000);
+  const targetUrl = "https://example.com/private-draft";
+  const result = await fetch(`${app.url}/${slug}/map`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ contentType: "Post", targetUrl, scheduledAt: scheduledAt.toISOString() }) });
+  assert.equal(result.status, 200);
+  const holding = await (await fetch(`${app.url}/public/${slug}`)).json();
+  assert.equal(holding.mappedUrl, "https://example.com/finished");
+  assert.equal(holding.scheduledDestination, undefined);
+  assert.equal(await publishScheduled(new Date()), 0);
+  assert.equal(await publishScheduled(new Date(scheduledAt.getTime() + 1)), 1);
+  assert.equal(await publishScheduled(new Date(scheduledAt.getTime() + 1)), 0);
+  assert.equal((await (await fetch(`${app.url}/public/${slug}`)).json()).mappedUrl, targetUrl);
+  await fetch(`${app.url}/${slug}/map`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ contentType: "Post", targetUrl: "https://example.com/cancelled", scheduledAt: scheduledAt.toISOString() }) });
+  assert.equal((await fetch(`${app.url}/${slug}/schedule`, { method: "DELETE", headers: ownerHeaders("other") })).status, 404);
+  assert.equal((await fetch(`${app.url}/${slug}/schedule`, { method: "DELETE", headers: ownerHeaders() })).status, 200);
+  assert.equal(await publishScheduled(new Date(scheduledAt.getTime() + 1)), 0);
 });

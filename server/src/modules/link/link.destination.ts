@@ -4,7 +4,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { unlink } from "node:fs/promises";
 import { z } from "zod";
 import { db } from "../../db/index.js";
-import { destinationVersions, linksTable } from "../../db/schema.js";
+import { destinationVersions, linksTable, linkAssets } from "../../db/schema.js";
 import ApiError from "../../utils/api-error.js";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../../utils/cloudinary.js";
 import { validateUrl, detectPostSubType, detectFileSubType } from "../../utils/utils.js";
@@ -24,7 +24,7 @@ export function snapshot(link: LinkRecord): Destination | null {
 export async function saveDestination(tx: Transaction, current: LinkRecord, destination: Destination, event?: string) {
   const previous = snapshot(current);
   if (previous) await tx.insert(destinationVersions).values({ linkId: current.id, destination: previous, publishedAt: current.mappedOn });
-  const [updated] = await tx.update(linksTable).set({ ...destination, mappedOn: new Date(), updatedAt: new Date() }).where(eq(linksTable.id, current.id)).returning();
+  const [updated] = await tx.update(linksTable).set({ ...destination, scheduledAt: null, scheduledDestination: null, mappedOn: new Date(), updatedAt: new Date() }).where(eq(linksTable.id, current.id)).returning();
   if (!updated) throw ApiError.notfound();
   await recordActivity(tx, current.id, event ?? (current.mappedUrl ? "Destination updated" : "Destination connected"));
   return updated;
@@ -47,6 +47,8 @@ export async function mapDestination(req: Request, res: Response) {
     const { userId } = getAuth(req);
     if (!userId) throw ApiError.unauthorised();
     let destination: Destination;
+    const scheduledAt = req.body?.scheduledAt ? new Date(parseBody(z.iso.datetime({ offset: true }), req.body.scheduledAt)) : null;
+    if (scheduledAt && scheduledAt.getTime() <= Date.now()) throw ApiError.badRequest("Choose a future publishing time");
     if (req.body?.contentType === "Post") {
       const input = parseBody(z.object({ targetUrl: z.string().max(2048) }), req.body);
       const url = validateUrl(input.targetUrl);
@@ -60,6 +62,13 @@ export async function mapDestination(req: Request, res: Response) {
     const updated = await db.transaction(async tx => {
       const current = await ownedLink(String(req.params.slug), userId, tx, true);
       assertActive(current.linkValidity);
+      if (scheduledAt && current.linkValidity && scheduledAt >= current.linkValidity) throw ApiError.badRequest("Extend your link so it remains active at the publishing time");
+      if (uploaded?.filePublicId) await tx.insert(linkAssets).values({ linkId: current.id, publicId: uploaded.filePublicId, resourceType: uploaded.fileResourceType ?? "image" });
+      if (scheduledAt) {
+        const [scheduled] = await tx.update(linksTable).set({ scheduledAt, scheduledDestination: destination, updatedAt: new Date() }).where(eq(linksTable.id, current.id)).returning();
+        await recordActivity(tx, current.id, "Destination scheduled for publication");
+        return scheduled;
+      }
       return saveDestination(tx, current, destination);
     });
     saved = true;

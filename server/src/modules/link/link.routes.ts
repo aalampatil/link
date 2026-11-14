@@ -13,6 +13,7 @@ import { updateHoldingPage, setPaused } from "./link.settings.js";
 import { mapDestination, ensureWritableLink, getHistory, restoreDestination } from "./link.destination.js";
 import { getActivity } from "./link.activity.js";
 import { updateDeadline } from "./link.deadline.js";
+import { cancelSchedule } from "./link.schedule.js";
 const linkRouter = Router();
 
 linkRouter.post("/create", requireAuth(), createLink);
@@ -28,4 +29,5 @@ linkRouter.post("/:slug/expiry", requireAuth(), extendExpiry);
 linkRouter.put("/:slug/holding", requireAuth(), updateHoldingPage);
 linkRouter.put("/:slug/pause", requireAuth(), setPaused);
 linkRouter.put("/:slug/deadline", requireAuth(), updateDeadline);
+linkRouter.delete("/:slug/schedule", requireAuth(), cancelSchedule);
 export default linkRouter;

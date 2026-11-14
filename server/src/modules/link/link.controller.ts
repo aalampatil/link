@@ -9,7 +9,7 @@ import {
   FILE_MIME_TO_SUB_TYPE,
 } from "../../utils/utils.js";
 import { getAuth } from "@clerk/express";
-import { linksTable, destinationVersions } from "../../db/schema.js";
+import { linksTable, destinationVersions, linkAssets } from "../../db/schema.js";
 import { desc, eq } from "drizzle-orm";
 import { env } from "../../env.js";
 import { z } from "zod";
@@ -158,6 +158,8 @@ const deleteLink = async (req: Request, res: Response) => {
   const versions = await db.select().from(destinationVersions).where(eq(destinationVersions.linkId, link.id));
   const assets = new Map([snapshot(link), ...versions.map(v => v.destination)].filter(v => v?.filePublicId).map(v => [v!.filePublicId!, v!]));
   for (const asset of assets.values()) await deleteFromCloudinary(asset.filePublicId!, asset.fileResourceType ?? "image");
+  const retained = await db.select().from(linkAssets).where(eq(linkAssets.linkId, link.id));
+  for (const asset of retained) if (!assets.has(asset.publicId)) await deleteFromCloudinary(asset.publicId, asset.resourceType as "image" | "video" | "raw");
 
   await db.delete(linksTable).where(eq(linksTable.slug, slug as string));
 
