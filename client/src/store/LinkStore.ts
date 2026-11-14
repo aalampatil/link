@@ -41,6 +41,10 @@ export type LinkData = {
   shareTitle: string;
   shareDescription: string;
   shareImageUrl: string | null;
+  healthEnabled: boolean;
+  healthEmail: string | null;
+  healthCheckedAt: string | null;
+  healthResults: { url: string; status: string; statusCode: number | null }[];
 };
 
 //#region 1

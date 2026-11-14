@@ -26,7 +26,7 @@ export function snapshot(link: LinkRecord): Destination | null {
 export async function saveDestination(tx: Transaction, current: LinkRecord, destination: Destination, event?: string) {
   const previous = snapshot(current);
   if (previous) await tx.insert(destinationVersions).values({ linkId: current.id, destination: previous, publishedAt: current.mappedOn });
-  const [updated] = await tx.update(linksTable).set({ ...destination, bundleItems: destination.bundleItems ?? [], scheduledAt: null, scheduledDestination: null, mappedOn: new Date(), updatedAt: new Date() }).where(eq(linksTable.id, current.id)).returning();
+  const [updated] = await tx.update(linksTable).set({ ...destination, bundleItems: destination.bundleItems ?? [], scheduledAt: null, scheduledDestination: null, healthResults: [], healthCheckedAt: null, healthNextCheckAt: null, healthFailures: 0, healthIncidentId: null, mappedOn: new Date(), updatedAt: new Date() }).where(eq(linksTable.id, current.id)).returning();
   if (!updated) throw ApiError.notfound();
   await recordActivity(tx, current.id, event ?? (current.mappedUrl ? "Destination updated" : "Destination connected"));
   return updated;

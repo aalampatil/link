@@ -13,6 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import type { Destination, BundleItem } from "../modules/link/link.types.js";
+import type { HealthResult } from "../utils/public-http.js";
 
 export const contentTypeEnum = pgEnum("content_type_enum", ["Post", "File"]);
 
@@ -34,6 +35,13 @@ export const linksTable = pgTable("links", {
   shareTitle: varchar("share_title", { length: 120 }).notNull().default(""),
   shareDescription: varchar("share_description", { length: 300 }).notNull().default(""),
   shareImageUrl: varchar("share_image_url", { length: 2048 }),
+  healthEnabled: boolean("health_enabled").notNull().default(false),
+  healthEmail: varchar("health_email", { length: 320 }),
+  healthCheckedAt: timestamp("health_checked_at", { withTimezone: true }),
+  healthNextCheckAt: timestamp("health_next_check_at", { withTimezone: true }),
+  healthResults: jsonb("health_results").$type<HealthResult[]>().notNull().default([]),
+  healthFailures: integer("health_failures").notNull().default(0),
+  healthIncidentId: uuid("health_incident_id"),
   mappedUrl: varchar("mapped_url", { length: 2048 }),
   mappedOn: timestamp("mapped_on", { withTimezone: true }),
   publicUrl: varchar("public_url", { length: 2048 }).notNull(),

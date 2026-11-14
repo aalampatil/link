@@ -10,6 +10,7 @@ import { publishScheduled } from "../src/jobs/publishing.js";
 import { enqueueReadyNotifications } from "../src/jobs/notifications.js";
 import { randomUUID } from "node:crypto";
 import { renderSharingHtml } from "../../client/server/share.js";
+import { checkLink } from "../src/modules/link/link.health.js";
 let app: Awaited<ReturnType<typeof testApp>>;
 let slug: string;
 before(async () => {
@@ -212,4 +213,33 @@ test("sharing previews expose only presentation fields and safely escape HTML", 
   assert.ok(!html.includes('<script>alert'));
   assert.ok(html.includes('id="root"'));
   assert.equal((html.match(/<title>/g) ?? []).length, 1);
+});
+
+test("health monitoring alerts after two failures, deduplicates an incident, and resets on recovery", async () => {
+  const now = new Date();
+  const [link] = await db.update(linksTable).set({ healthEnabled: true, healthEmail: "owner@example.test" }).where(eq(linksTable.slug, slug)).returning();
+  const failing = async (url: string) => ({ url, status: "unavailable" as const, statusCode: 503 });
+  const recovered = async (url: string) => ({ url, status: "healthy" as const, statusCode: 200 });
+  await checkLink(link!.id, { probe: failing, now });
+  let jobs = (await db.select().from(mailJobs).where(eq(mailJobs.linkId, link!.id))).filter(job => job.kind === "health");
+  assert.equal(jobs.length, 0);
+  await checkLink(link!.id, { probe: failing, now: new Date(now.getTime() + 60000) });
+  await checkLink(link!.id, { probe: failing, now: new Date(now.getTime() + 120000) });
+  jobs = (await db.select().from(mailJobs).where(eq(mailJobs.linkId, link!.id))).filter(job => job.kind === "health");
+  assert.equal(jobs.length, 1);
+  const delivered: string[] = [];
+  await processMailJobs(async mail => { delivered.push(mail.subject); }, new Date(now.getTime() + 180000));
+  assert.equal(delivered.filter(subject => subject.includes("may be unavailable")).length, 1);
+  const result = await checkLink(link!.id, { probe: recovered, now: new Date(now.getTime() + 240000) });
+  assert.equal(result?.healthFailures, 0);
+  assert.equal(result?.healthIncidentId, null);
+  assert.equal(result?.healthResults.length, 2);
+});
+
+test("manual health checks are owner-scoped and do not fetch private destinations", async () => {
+  await db.update(linksTable).set({ mappedUrl: "http://127.0.0.1/private", bundleItems: [], healthCheckedAt: null }).where(eq(linksTable.slug, slug));
+  assert.equal((await fetch(`${app.url}/${slug}/health/check`, { method: "POST", headers: ownerHeaders("other") })).status, 404);
+  const response = await fetch(`${app.url}/${slug}/health/check`, { method: "POST", headers: ownerHeaders() });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).healthResults[0].status, "unsupported");
 });

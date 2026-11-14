@@ -16,6 +16,7 @@ import { updateDeadline } from "./link.deadline.js";
 import { cancelSchedule } from "./link.schedule.js";
 import { getAnalytics } from "./link.analytics.js";
 import { updateSharing } from "./link.sharing.js";
+import { checkDestination, updateHealthSettings } from "./link.health.js";
 const linkRouter = Router();
 
 linkRouter.post("/create", requireAuth(), createLink);
@@ -27,6 +28,8 @@ linkRouter.get("/:slug/history", requireAuth(), getHistory);
 linkRouter.get("/:slug/activity", requireAuth(), getActivity);
 linkRouter.get("/:slug/analytics", requireAuth(), getAnalytics);
 linkRouter.put("/:slug/sharing", requireAuth(), updateSharing);
+linkRouter.post("/:slug/health/check", requireAuth(), checkDestination);
+linkRouter.put("/:slug/health", requireAuth(), updateHealthSettings);
 linkRouter.post("/:slug/restore", requireAuth(), restoreDestination);
 linkRouter.get("/get-all", requireAuth(), getAllLinks);
 linkRouter.delete("/delete/:slug", requireAuth(), deleteLink);

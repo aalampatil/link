@@ -112,6 +112,21 @@ bundles `dist/index.html` and routes public links through `api/share.ts`.
 Other SPA routes and static assets keep their normal behavior. Metadata falls
 back to the app page if the API is unavailable; social platforms may cache cards.
 
+## Destination health
+
+Insights supports manual checks (at most once per minute) and opt-in daily
+monitoring of a destination or all bundle resources. Optional alerts go to the
+verified owner email after two consecutive unavailable results, once per outage.
+Recovery and destination replacement reset the incident. Authentication/rate
+restrictions and unsupported targets do not trigger broken-destination alerts.
+
+Probes use HEAD with a small GET fallback, an 8-second deadline, up to three
+redirects, and no credentials/cookies. Only public HTTP/HTTPS addresses on ports
+80/443 are supported. Every redirect is resolved and validated; connections use
+the validated IP without a second DNS lookup. Private/reserved addresses and
+mixed public/private DNS answers are rejected. Background checks use short
+database leases and discard results if the destination changed during the probe.
+
 ## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests

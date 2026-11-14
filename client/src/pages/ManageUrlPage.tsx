@@ -24,6 +24,7 @@ import SchedulePanel from "@/features/links/SchedulePanel";
 import AnalyticsPanel from "@/features/links/AnalyticsPanel";
 import BundleEditor from "@/features/links/BundleEditor";
 import SharingPanel from "@/features/links/SharingPanel";
+import HealthPanel from "@/features/links/HealthPanel";
 
 export default function ManageUrlPage() {
   const [tab, setTab] = useState("destination");
@@ -202,6 +203,7 @@ export default function ManageUrlPage() {
           {tab === "history" && <HistoryPanel key={data.updatedAt} slug={data.slug} onUpdated={() => fetchLink(slug!)} />}
           {tab === "history" && <ActivityPanel key={`activity-${data.updatedAt}`} slug={data.slug} />}
           {tab === "insights" && <AnalyticsPanel slug={data.slug} />}
+          {tab === "insights" && <HealthPanel key={data.healthCheckedAt ?? data.updatedAt} link={data} onUpdated={() => fetchLink(slug!)} />}
           </div>
           <aside className="panel overflow-hidden">
             <div className="border-b border-border bg-muted px-5 py-4">

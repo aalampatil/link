@@ -33,6 +33,7 @@ export async function processMailJobs(deliver = sendMail, now = new Date(), sign
         job.kind === "expiry" && link.linkValidity?.toISOString() === job.reference
       ));
       let subscriptionId: string | undefined;
+      if (job.kind === "health") valid = Boolean(link && !isExpired(link.linkValidity, now) && link.healthEnabled && link.healthEmail === job.recipient && link.healthFailures >= 2 && link.healthIncidentId === job.reference);
       if (job.kind === "verify" || job.kind === "ready") {
         subscriptionId = job.reference.split(":")[0];
         const [subscription] = await tx.select().from(subscriptions).where(and(eq(subscriptions.id, subscriptionId!), eq(subscriptions.linkId, job.linkId))).for("update");
