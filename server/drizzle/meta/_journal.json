@@ -148,6 +148,13 @@
       "when": 1794650602091,
       "tag": "0020_destination_health",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794651891157,
+      "tag": "0021_lifecycle_indexes",
+      "breakpoints": true
     }
   ]
 }
