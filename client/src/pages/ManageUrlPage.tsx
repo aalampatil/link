@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useManageLinkStore } from "@/store/LinkStore";
 import { copyLink } from "@/lib/clipboard";
 import { linkPublicUrl } from "@/lib/localUrls";
+import ExpiryPanel from "@/features/links/ExpiryPanel";
 
 export default function ManageUrlPage() {
   const {
@@ -223,6 +224,7 @@ export default function ManageUrlPage() {
                 <Copy size={12} /> Copy public link
               </Button>
             </div>
+            <ExpiryPanel link={data} onUpdated={() => fetchLink(slug!)} />
           </aside>
         </div>
       )}

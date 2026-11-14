@@ -10,7 +10,7 @@ type AxiosErrorResponse = {
   };
 };
 
-type LinkData = {
+export type LinkData = {
   id: string;
   displayTitle: string;
   slug: string;
@@ -23,6 +23,7 @@ type LinkData = {
   contentType: string | null;
   createdAt: string;
   updatedAt: string;
+  linkValidity: string | null;
 };
 
 //#region 1

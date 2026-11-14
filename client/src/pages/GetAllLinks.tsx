@@ -17,6 +17,7 @@ import { useFetchLinksStore } from "@/store/LinkStore";
 import axiosApi from "@/config/axiosApi";
 import { linkPublicUrl } from "@/lib/localUrls";
 import { copyLink } from "@/lib/clipboard";
+import { expiryLabel } from "@/features/links/presentation";
 
 const formatDate = (iso: string | null) =>
   iso
@@ -173,6 +174,7 @@ export default function GetAllLinks() {
                     </h2>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Created {formatDate(link.createdAt)}
+                      {" · "}{expiryLabel(link.linkValidity)}
                     </p>
                   </div>
                 </div>
@@ -272,7 +274,7 @@ export default function GetAllLinks() {
         </div>
       )}
       <p className="mt-6 text-xs text-muted-foreground">
-        Links are valid for 30 days from creation.
+        Links start with 30 days of validity. Extend or renew them from link settings.
       </p>
     </main>
   );

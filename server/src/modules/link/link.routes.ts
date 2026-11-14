@@ -6,6 +6,7 @@ import {
   mapLink,
   publicLink,
   deleteLink,
+  extendExpiry,
 } from "./link.controller.js";
 import { requireAuth } from "@clerk/express";
 import { upload } from "../../middlewares/upload.middleware.js";
@@ -17,4 +18,5 @@ linkRouter.get("/manage/:slug", requireAuth(), manageLink);
 linkRouter.post("/:slug/map", requireAuth(), upload.single("file"), mapLink);
 linkRouter.get("/get-all", requireAuth(), getAllLinks);
 linkRouter.delete("/delete/:slug", requireAuth(), deleteLink);
+linkRouter.post("/:slug/expiry", requireAuth(), extendExpiry);
 export default linkRouter;

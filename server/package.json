@@ -4,6 +4,7 @@
   "description": "API for Link, a deadline submission service for sharing placeholder links and connecting URLs or files later.",
   "main": "index.js",
   "scripts": {
+    "test": "tsx --test --test-concurrency=1 test/*.test.ts",
     "dev": "cross-env NODE_ENV=development tsc-watch --onSuccess \" node dist/index.js \"",
     "build": "tsc",
     "start": "node dist/index.js",

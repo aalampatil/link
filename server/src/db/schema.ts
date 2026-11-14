@@ -34,7 +34,7 @@ export const linksTable = pgTable("links", {
   contentSubType: varchar("content_sub_type", { length: 40 }), // x, yt, linkedin, pdf, image, docx,
   fileSecureURL: varchar("file_secure_url", { length: 2048 }),
   filePublicId: varchar("file_public_id", { length: 2048 }),
-  linkValidity: timestamp("link_validity").default(
+  linkValidity: timestamp("link_validity", { withTimezone: true }).default(
     sql`now() + interval '30 days'`,
   ),
 });

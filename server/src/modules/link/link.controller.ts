@@ -9,10 +9,12 @@ import {
   FILE_MIME_TO_SUB_TYPE,
 } from "../../utils/utils.js";
 import { getAuth } from "@clerk/express";
-import { isProduction } from "../../index.js";
 import { linksTable } from "../../db/schema.js";
 import { desc, eq } from "drizzle-orm";
 import { env } from "../../env.js";
+import { z } from "zod";
+import { assertActive as assertLinkIsActive, extendedValidity } from "./link.policy.js";
+import { ownedLink } from "./link.repository.js";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
@@ -29,13 +31,6 @@ const slugify = (value: string) =>
 const createSlug = (displayTitle: string) => {
   const baseSlug = slugify(displayTitle);
   return baseSlug ? `${baseSlug}-${nanoid(6)}` : nanoid(12);
-};
-
-const assertLinkIsActive = (linkValidity: Date | string | null) => {
-  if (!linkValidity) return;
-  if (new Date(linkValidity).getTime() < Date.now()) {
-    throw ApiError.gone("Link has expired");
-  }
 };
 
 const createLink = async (req: Request, res: Response, next: NextFunction) => {
@@ -89,10 +84,7 @@ const publicLink = async (req: Request, res: Response) => {
   if (!link) throw ApiError.notfound();
   assertLinkIsActive(link.linkValidity);
 
-  res.set(
-    "Cache-Control",
-    "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
-  );
+  res.set("Cache-Control", "no-store");
   res.json({
     slug: link.slug,
     status: link.status, // ✅ from computed column
@@ -111,22 +103,23 @@ const manageLink = async (req: Request, res: Response) => {
   // console.log(slug);
   if (typeof slug !== "string") throw ApiError.badRequest();
 
-  const [link] = await db
-    .select()
-    .from(linksTable)
-    .where(eq(linksTable.slug, slug));
+  const link = await ownedLink(slug, userId);
+  res.set("Cache-Control", "no-store").json(link);
+};
 
-  if (!link) throw ApiError.notfound();
-  assertLinkIsActive(link.linkValidity);
-  if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
-
-  res.json({
-    slug: link.slug,
-    status: link.status,
-    displayTitle: link.displayTitle,
-    mappedUrl: link.mappedUrl ?? null,
-    mappedOn: link.mappedOn,
+export const extendExpiry = async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  if (!userId) throw ApiError.unauthorised();
+  const input = z.object({ days: z.number().int().min(1).max(365) }).safeParse(req.body);
+  if (!input.success) throw ApiError.badRequest("Choose an extension between 1 and 365 days");
+  const link = await db.transaction(async (tx) => {
+    const current = await ownedLink(String(req.params.slug), userId, tx, true);
+    const [updated] = await tx.update(linksTable).set({
+      linkValidity: extendedValidity(current.linkValidity, input.data.days), updatedAt: new Date(),
+    }).where(eq(linksTable.id, current.id)).returning();
+    return updated;
   });
+  res.json(link);
 };
 
 //#region
