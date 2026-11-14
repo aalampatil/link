@@ -12,6 +12,7 @@ import { assertActive } from "./link.policy.js";
 import { ownedLink, type LinkRecord, type Transaction } from "./link.repository.js";
 import type { Destination } from "./link.types.js";
 import { parseBody } from "./link.validation.js";
+import { recordActivity } from "./link.activity.js";
 
 export function snapshot(link: LinkRecord): Destination | null {
   if (!link.mappedUrl || !link.contentType) return null;
@@ -20,11 +21,12 @@ export function snapshot(link: LinkRecord): Destination | null {
     fileSecureURL: link.fileSecureURL, filePublicId: link.filePublicId, fileResourceType: resource as Destination["fileResourceType"] };
 }
 
-export async function saveDestination(tx: Transaction, current: LinkRecord, destination: Destination) {
+export async function saveDestination(tx: Transaction, current: LinkRecord, destination: Destination, event?: string) {
   const previous = snapshot(current);
   if (previous) await tx.insert(destinationVersions).values({ linkId: current.id, destination: previous, publishedAt: current.mappedOn });
   const [updated] = await tx.update(linksTable).set({ ...destination, mappedOn: new Date(), updatedAt: new Date() }).where(eq(linksTable.id, current.id)).returning();
   if (!updated) throw ApiError.notfound();
+  await recordActivity(tx, current.id, event ?? (current.mappedUrl ? "Destination updated" : "Destination connected"));
   return updated;
 }
 
@@ -85,7 +87,7 @@ export async function restoreDestination(req: Request, res: Response) {
     assertActive(current.linkValidity);
     const [version] = await tx.select().from(destinationVersions).where(and(eq(destinationVersions.id, input.versionId), eq(destinationVersions.linkId, current.id)));
     if (!version) throw ApiError.notfound("Destination version not found");
-    return saveDestination(tx, current, version.destination);
+    return saveDestination(tx, current, version.destination, "Destination restored");
   });
   res.json(updated);
 }

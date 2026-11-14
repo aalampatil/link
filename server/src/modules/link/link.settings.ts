@@ -7,6 +7,7 @@ import { linksTable } from "../../db/schema.js";
 import ApiError from "../../utils/api-error.js";
 import { ownedLink } from "./link.repository.js";
 import { optionalDate, parseBody } from "./link.validation.js";
+import { recordActivity } from "./link.activity.js";
 
 const holdingSchema = z.object({
   displayTitle: z.string().trim().min(1).max(120),
@@ -24,6 +25,7 @@ export async function updateHoldingPage(req: Request, res: Response) {
     const [link] = await tx.update(linksTable).set({
       ...input, expectedAt: input.expectedAt ? new Date(input.expectedAt) : null, updatedAt: new Date(),
     }).where(eq(linksTable.id, current.id)).returning();
+    await recordActivity(tx, current.id, "Holding page updated");
     return link;
   });
   res.json(updated);
@@ -36,6 +38,7 @@ export async function setPaused(req: Request, res: Response) {
   const updated = await db.transaction(async tx => {
     const link = await ownedLink(String(req.params.slug), userId, tx, true);
     const [result] = await tx.update(linksTable).set({ paused: input.paused, updatedAt: new Date() }).where(eq(linksTable.id, link.id)).returning();
+    await recordActivity(tx, link.id, input.paused ? "Link paused" : "Link resumed");
     return result;
   });
   res.json(updated);

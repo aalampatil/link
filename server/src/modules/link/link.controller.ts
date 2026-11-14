@@ -17,6 +17,7 @@ import { assertActive as assertLinkIsActive, extendedValidity } from "./link.pol
 import { ownedLink } from "./link.repository.js";
 import { publicView } from "./link.public.js";
 import { snapshot } from "./link.destination.js";
+import { recordActivity } from "./link.activity.js";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
@@ -113,6 +114,7 @@ export const extendExpiry = async (req: Request, res: Response) => {
     const [updated] = await tx.update(linksTable).set({
       linkValidity: extendedValidity(current.linkValidity, input.data.days), updatedAt: new Date(),
     }).where(eq(linksTable.id, current.id)).returning();
+    await recordActivity(tx, current.id, `Validity extended by ${input.data.days} days`);
     return updated;
   });
   res.json(link);

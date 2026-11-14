@@ -68,3 +68,10 @@ test("history preserves previous destinations and restores only a version owned 
   assert.equal(restored.status, 200);
   assert.equal((await restored.json()).mappedUrl, "https://example.com/finished");
 });
+
+test("activity records changes atomically and remains owner-only", async () => {
+  const result = await (await fetch(`${app.url}/${slug}/activity`, { headers: ownerHeaders() })).json();
+  assert.ok(result.events.some((event: { message: string }) => event.message === "Destination restored"));
+  assert.ok(result.events.some((event: { message: string }) => event.message === "Link paused"));
+  assert.equal((await fetch(`${app.url}/${slug}/activity`, { headers: ownerHeaders("other") })).status, 404);
+});

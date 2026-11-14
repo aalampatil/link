@@ -18,6 +18,7 @@ import ExpiryPanel from "@/features/links/ExpiryPanel";
 import HoldingPanel from "@/features/links/HoldingPanel";
 import PausePanel from "@/features/links/PausePanel";
 import HistoryPanel from "@/features/links/HistoryPanel";
+import ActivityPanel from "@/features/links/ActivityPanel";
 
 export default function ManageUrlPage() {
   const [tab, setTab] = useState("destination");
@@ -182,6 +183,7 @@ export default function ManageUrlPage() {
           {tab === "settings" && <HoldingPanel key={data.updatedAt} link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "settings" && <PausePanel link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "history" && <HistoryPanel key={data.updatedAt} slug={data.slug} onUpdated={() => fetchLink(slug!)} />}
+          {tab === "history" && <ActivityPanel key={`activity-${data.updatedAt}`} slug={data.slug} />}
           </div>
           <aside className="panel overflow-hidden">
             <div className="border-b border-border bg-muted px-5 py-4">

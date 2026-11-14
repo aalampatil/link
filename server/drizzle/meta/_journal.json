@@ -92,6 +92,13 @@
       "when": 1794648793896,
       "tag": "0012_destination_history",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794648931001,
+      "tag": "0013_project_activity",
+      "breakpoints": true
     }
   ]
 }

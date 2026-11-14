@@ -57,3 +57,10 @@ export const destinationVersions = pgTable("destination_versions", {
   publishedAt: timestamp("published_at", { withTimezone: true }),
   replacedAt: timestamp("replaced_at", { withTimezone: true }).defaultNow().notNull(),
 }, table => [index("destination_versions_link_idx").on(table.linkId, table.replacedAt)]);
+
+export const linkActivity = pgTable("link_activity", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  linkId: uuid("link_id").notNull().references(() => linksTable.id, { onDelete: "cascade" }),
+  message: varchar("message", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, table => [index("link_activity_link_idx").on(table.linkId, table.createdAt)]);

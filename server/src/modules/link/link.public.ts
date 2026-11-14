@@ -10,5 +10,7 @@ export function publicView(link: LinkRecord) {
     holdingMessage: link.holdingMessage,
     expectedAt: link.expectedAt,
     progress: link.progress,
+    createdAt: link.createdAt,
+    updatedAt: link.updatedAt,
   };
 }
