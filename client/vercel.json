@@ -1,4 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "functions": { "api/share.ts": { "includeFiles": "dist/index.html" } },
+  "rewrites": [
+    { "source": "/l/:slug", "destination": "/api/share?slug=:slug" },
+    { "source": "/:path((?!api/).*)", "destination": "/index.html" }
+  ]
 }

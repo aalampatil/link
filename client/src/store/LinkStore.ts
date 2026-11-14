@@ -38,6 +38,9 @@ export type LinkData = {
   scheduledAt: string | null;
   scheduledDestination: { mappedUrl: string } | null;
   bundleItems: BundleItem[];
+  shareTitle: string;
+  shareDescription: string;
+  shareImageUrl: string | null;
 };
 
 //#region 1

@@ -101,6 +101,17 @@ history restoration. Replacing a bundle with a URL/file removes its public item
 list. Draft file URLs are withheld from public API responses until publication.
 Files use unlisted Cloudinary URLs and remain stored until the link is deleted.
 
+## Sharing previews
+
+Project settings include an optional sharing title, description, and HTTPS
+thumbnail URL. Public `/l/:slug` requests serve Open Graph/Twitter metadata
+with the normal app HTML. The Vite dev/preview middleware and Vercel Node
+function use the same escaping/rendering code; crawlers need no JavaScript.
+Keep `VITE_SERVER` available in the Vercel function environment. `vercel.json`
+bundles `dist/index.html` and routes public links through `api/share.ts`.
+Other SPA routes and static assets keep their normal behavior. Metadata falls
+back to the app page if the API is unavailable; social platforms may cache cards.
+
 ## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests

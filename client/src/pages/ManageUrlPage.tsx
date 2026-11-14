@@ -23,6 +23,7 @@ import DeadlinePanel from "@/features/links/DeadlinePanel";
 import SchedulePanel from "@/features/links/SchedulePanel";
 import AnalyticsPanel from "@/features/links/AnalyticsPanel";
 import BundleEditor from "@/features/links/BundleEditor";
+import SharingPanel from "@/features/links/SharingPanel";
 
 export default function ManageUrlPage() {
   const [tab, setTab] = useState("destination");
@@ -197,6 +198,7 @@ export default function ManageUrlPage() {
           {tab === "settings" && <HoldingPanel key={data.updatedAt} link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "settings" && <PausePanel link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "settings" && <DeadlinePanel link={data} onUpdated={() => fetchLink(slug!)} />}
+          {tab === "settings" && <SharingPanel link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "history" && <HistoryPanel key={data.updatedAt} slug={data.slug} onUpdated={() => fetchLink(slug!)} />}
           {tab === "history" && <ActivityPanel key={`activity-${data.updatedAt}`} slug={data.slug} />}
           {tab === "insights" && <AnalyticsPanel slug={data.slug} />}

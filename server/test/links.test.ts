@@ -9,6 +9,7 @@ import { mailJobs } from "../src/db/schema.js";
 import { publishScheduled } from "../src/jobs/publishing.js";
 import { enqueueReadyNotifications } from "../src/jobs/notifications.js";
 import { randomUUID } from "node:crypto";
+import { renderSharingHtml } from "../../client/server/share.js";
 let app: Awaited<ReturnType<typeof testApp>>;
 let slug: string;
 before(async () => {
@@ -196,4 +197,19 @@ test("bundles publish labeled resources, hide while paused, and restore through 
   assert.ok(bundle);
   assert.equal((await fetch(`${app.url}/${slug}/restore`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ versionId: bundle.id }) })).status, 200);
   assert.deepEqual((await (await fetch(`${app.url}/public/${slug}`)).json()).bundleItems, items);
+});
+
+test("sharing previews expose only presentation fields and safely escape HTML", async () => {
+  const body = { shareTitle: "Demo <launch>", shareDescription: "A preview & description", shareImageUrl: "https://example.com/thumbnail.png" };
+  assert.equal((await fetch(`${app.url}/${slug}/sharing`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify(body) })).status, 200);
+  assert.equal((await fetch(`${app.url}/${slug}/sharing`, { method: "PUT", headers: ownerHeaders("other"), body: JSON.stringify(body) })).status, 404);
+  const preview = await (await fetch(`${app.url}/public/${slug}/preview`)).json();
+  assert.equal(preview.title, body.shareTitle);
+  assert.equal(preview.mappedUrl, undefined);
+  const html = renderSharingHtml('<html><head><title>Old</title><meta name="description" content="old" /></head><body><div id="root"></div></body></html>', { ...preview, title: '</title><script>alert("x")</script>' });
+  assert.ok(html.includes('property="og:title"'));
+  assert.ok(html.includes("&lt;script&gt;"));
+  assert.ok(!html.includes('<script>alert'));
+  assert.ok(html.includes('id="root"'));
+  assert.equal((html.match(/<title>/g) ?? []).length, 1);
 });
