@@ -12,7 +12,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { Destination } from "../modules/link/link.types.js";
+import type { Destination, BundleItem } from "../modules/link/link.types.js";
 
 export const contentTypeEnum = pgEnum("content_type_enum", ["Post", "File"]);
 
@@ -30,6 +30,7 @@ export const linksTable = pgTable("links", {
   reminderEmail: varchar("reminder_email", { length: 320 }),
   scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
   scheduledDestination: jsonb("scheduled_destination").$type<Destination>(),
+  bundleItems: jsonb("bundle_items").$type<BundleItem[]>().notNull().default([]),
   mappedUrl: varchar("mapped_url", { length: 2048 }),
   mappedOn: timestamp("mapped_on", { withTimezone: true }),
   publicUrl: varchar("public_url", { length: 2048 }).notNull(),

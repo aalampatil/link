@@ -179,3 +179,21 @@ test("visit analytics deduplicate sessions, distinguish phases, and stay owner-o
   assert.equal((await fetch(`${app.url}/${slug}/analytics`, { headers: ownerHeaders("other") })).status, 404);
   await db.update(linksTable).set({ mappedUrl: "https://example.com/finished" }).where(eq(linksTable.slug, slug));
 });
+
+test("bundles publish labeled resources, hide while paused, and restore through history", async () => {
+  const items = [{ id: randomUUID(), label: "Demo", url: "https://example.com/demo" }, { id: randomUUID(), label: "Presentation", url: "https://example.com/slides.pdf" }];
+  const result = await fetch(`${app.url}/${slug}/map`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ contentType: "Bundle", bundleItems: items }) });
+  assert.equal(result.status, 200);
+  assert.deepEqual((await (await fetch(`${app.url}/public/${slug}`)).json()).bundleItems, items);
+  await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ paused: true }) });
+  assert.deepEqual((await (await fetch(`${app.url}/public/${slug}`)).json()).bundleItems, []);
+  await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ paused: false }) });
+  assert.equal((await fetch(`${app.url}/${slug}/map`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ contentType: "Bundle", bundleItems: [{ ...items[0], url: "javascript:alert(1)" }] }) })).status, 400);
+  await fetch(`${app.url}/${slug}/map`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ contentType: "Post", targetUrl: "https://example.com/replacement" }) });
+  assert.deepEqual((await (await fetch(`${app.url}/public/${slug}`)).json()).bundleItems, []);
+  const { versions } = await (await fetch(`${app.url}/${slug}/history`, { headers: ownerHeaders() })).json();
+  const bundle = versions.find((version: { destination: { bundleItems?: unknown[] } }) => version.destination.bundleItems?.length === 2);
+  assert.ok(bundle);
+  assert.equal((await fetch(`${app.url}/${slug}/restore`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ versionId: bundle.id }) })).status, 200);
+  assert.deepEqual((await (await fetch(`${app.url}/public/${slug}`)).json()).bundleItems, items);
+});

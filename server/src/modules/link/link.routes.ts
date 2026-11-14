@@ -10,7 +10,7 @@ import {
 import { requireAuth } from "@clerk/express";
 import { upload } from "../../middlewares/upload.middleware.js";
 import { updateHoldingPage, setPaused } from "./link.settings.js";
-import { mapDestination, ensureWritableLink, getHistory, restoreDestination } from "./link.destination.js";
+import { mapDestination, ensureWritableLink, getHistory, restoreDestination, uploadBundleFile } from "./link.destination.js";
 import { getActivity } from "./link.activity.js";
 import { updateDeadline } from "./link.deadline.js";
 import { cancelSchedule } from "./link.schedule.js";
@@ -21,6 +21,7 @@ linkRouter.post("/create", requireAuth(), createLink);
 linkRouter.get("/public/:slug", publicLink);
 linkRouter.get("/manage/:slug", requireAuth(), manageLink);
 linkRouter.post("/:slug/map", requireAuth(), ensureWritableLink, upload.single("file"), mapDestination);
+linkRouter.post("/:slug/bundle-file", requireAuth(), ensureWritableLink, upload.single("file"), uploadBundleFile);
 linkRouter.get("/:slug/history", requireAuth(), getHistory);
 linkRouter.get("/:slug/activity", requireAuth(), getActivity);
 linkRouter.get("/:slug/analytics", requireAuth(), getAnalytics);

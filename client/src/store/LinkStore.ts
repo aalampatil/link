@@ -11,6 +11,7 @@ type AxiosErrorResponse = {
   };
 };
 
+export type BundleItem = { id: string; label: string; url: string };
 export type LinkData = {
   id: string;
   displayTitle: string;
@@ -36,6 +37,7 @@ export type LinkData = {
   notificationsAvailable?: boolean;
   scheduledAt: string | null;
   scheduledDestination: { mappedUrl: string } | null;
+  bundleItems: BundleItem[];
 };
 
 //#region 1
@@ -122,6 +124,8 @@ type ManageLinkStore = {
   targetUrl: string;
   scheduledAt: string;
   setScheduledAt: (value: string) => void;
+  bundleItems: BundleItem[];
+  setBundleItems: (items: BundleItem[]) => void;
   loading: boolean;
   fetching: boolean;
 
@@ -137,6 +141,8 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
   targetUrl: "",
   scheduledAt: "",
   setScheduledAt: (value) => set({ scheduledAt: value }),
+  bundleItems: [],
+  setBundleItems: (items) => set({ bundleItems: items }),
   contentType: "Post",
   file: null,
 
@@ -168,6 +174,7 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
       const res = await axiosApi.get(`/link/manage/${slug}`);
       set({
         data: res.data,
+        bundleItems: res.data.bundleItems ?? [],
       });
     } catch (err) {
       const message =
@@ -192,6 +199,7 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
       if (targetUrl) formdata.append("targetUrl", targetUrl);
       if (file) formdata.append("file", file);
       if (get().scheduledAt) formdata.append("scheduledAt", new Date(get().scheduledAt).toISOString());
+      if (contentType === "Bundle") formdata.append("bundleItems", JSON.stringify(get().bundleItems));
 
       const res = await axiosApi.post(`/link/${slug}/map`, formdata, {
         headers: {
@@ -240,7 +248,7 @@ export const usePublicLinkStore = create<PublicLinkStore>((set) => ({
       const res = await publicAxiosApi.get(`/link/public/${slug}`);
       await trackVisit(slug);
       const link = res.data.mappedUrl;
-      if (link) {
+      if (link && !res.data.bundleItems?.length) {
         window.location.replace(link);
         return;
       }

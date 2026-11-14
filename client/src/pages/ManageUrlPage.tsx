@@ -22,6 +22,7 @@ import ActivityPanel from "@/features/links/ActivityPanel";
 import DeadlinePanel from "@/features/links/DeadlinePanel";
 import SchedulePanel from "@/features/links/SchedulePanel";
 import AnalyticsPanel from "@/features/links/AnalyticsPanel";
+import BundleEditor from "@/features/links/BundleEditor";
 
 export default function ManageUrlPage() {
   const [tab, setTab] = useState("destination");
@@ -38,6 +39,7 @@ export default function ManageUrlPage() {
     contentType,
     setContentType,
     scheduledAt, setScheduledAt,
+    bundleItems, setBundleItems,
   } = useManageLinkStore();
   const { slug } = useParams();
   useEffect(() => {
@@ -47,6 +49,7 @@ export default function ManageUrlPage() {
     event.preventDefault();
     const form = event.currentTarget;
     if (!slug || loading) return;
+    if (contentType === "Bundle" && !bundleItems.length) { toast.error("Add at least one bundle resource"); return; }
     if (contentType === "File" && !file) {
       toast.error("Please choose a file");
       return;
@@ -110,13 +113,14 @@ export default function ManageUrlPage() {
               Choose where visitors go when they open your public link.
             </p>
             <div
-              className="mb-6 grid grid-cols-2 gap-3"
+              className="mb-6 grid gap-3 sm:grid-cols-3"
               role="group"
               aria-label="Destination type"
             >
               {[
                 { type: "Post", label: "Website URL", icon: Globe },
                 { type: "File", label: "Upload a file", icon: FileUp },
+                { type: "Bundle", label: "Resource bundle", icon: Link2 },
               ].map(({ type, label, icon: Icon }) => (
                 <button
                   type="button"
@@ -131,7 +135,7 @@ export default function ManageUrlPage() {
                 </button>
               ))}
             </div>
-            {contentType === "Post" ? (
+            {contentType === "Bundle" ? <BundleEditor slug={data.slug} items={bundleItems} onChange={setBundleItems} disabled={loading} /> : contentType === "Post" ? (
               <div>
                 <label htmlFor="destination-url" className="field-label">
                   Destination URL

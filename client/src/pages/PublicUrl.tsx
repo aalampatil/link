@@ -40,7 +40,7 @@ export default function PublicUrl() {
           {isLoading
             ? "Just a moment"
             : data
-              ? data.status === "paused" ? "Temporarily paused" : "Work in progress"
+              ? data.bundleItems?.length ? "Project resources" : data.status === "paused" ? "Temporarily paused" : "Work in progress"
               : "Link unavailable"}
         </p>
         <h1 className="text-3xl font-medium leading-tight">
@@ -54,7 +54,7 @@ export default function PublicUrl() {
           {isLoading
             ? "We’re checking the latest destination."
             : data
-              ? data.holdingMessage || "The owner has created a place for their work. Once it’s connected, this link will take you straight there."
+              ? data.holdingMessage || (data.bundleItems?.length ? "Explore the resources for this project." : "The owner has created a place for their work. Once it’s connected, this link will take you straight there.")
               : error ||
               "It may have expired or been removed. Check the address with the person who shared it."}
         </p>
@@ -71,7 +71,7 @@ export default function PublicUrl() {
           </div>
         )}
         <div className="mt-12 border-t border-border pt-6">
-          {data?.notificationsAvailable && <SubscribeForm slug={data.slug} />}
+          {data?.bundleItems?.length ? <ul className="mb-8 space-y-3 text-left">{data.bundleItems.map(item => <li key={item.id}><a className="panel flex items-center justify-between gap-4 p-4 text-sm hover:bg-secondary" href={item.url} target="_blank" rel="noopener noreferrer">{item.label}<ArrowUpRight size={16} /></a></li>)}</ul> : data?.notificationsAvailable && <SubscribeForm slug={data.slug} />}
           <Link to="/" className="quiet-link inline-flex items-center gap-2">
             {data ? (
               <>

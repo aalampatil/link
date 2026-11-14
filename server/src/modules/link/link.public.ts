@@ -7,6 +7,7 @@ export function publicView(link: LinkRecord) {
     status: link.paused ? "paused" : link.status,
     displayTitle: link.displayTitle,
     mappedUrl: link.paused ? null : link.mappedUrl,
+    bundleItems: link.paused ? [] : link.bundleItems,
     mappedOn: link.paused ? null : link.mappedOn,
     holdingMessage: link.holdingMessage,
     expectedAt: link.expectedAt,

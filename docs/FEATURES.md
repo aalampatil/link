@@ -92,6 +92,15 @@ by link and a random session key. No IP address, referrer, or cookie is stored.
 Crawler requests to the public JSON endpoint do not themselves count as visits.
 Analytics is owner-only. Deleting a link removes its visit records.
 
+## Submission bundles
+
+The destination editor supports a bundle of up to 12 labeled resources. Add
+URLs, upload supported files, remove items, and change their order. Visitors see
+a resource page instead of a redirect. Bundles support scheduling, pausing, and
+history restoration. Replacing a bundle with a URL/file removes its public item
+list. Draft file URLs are withheld from public API responses until publication.
+Files use unlisted Cloudinary URLs and remain stored until the link is deleted.
+
 ## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests
