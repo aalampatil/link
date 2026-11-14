@@ -1,0 +1,1 @@
+ALTER TABLE "links" ADD COLUMN "bundle_items" jsonb DEFAULT '[]'::jsonb NOT NULL;

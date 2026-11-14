@@ -1,0 +1,269 @@
+{
+  "id": "e9c94d40-160d-4034-ad6c-4c7752baaf73",
+  "prevId": "94913c46-b635-43de-9f65-40cf66b9558b",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.destination_versions": {
+      "name": "destination_versions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "link_id": {
+          "name": "link_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "destination": {
+          "name": "destination",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "replaced_at": {
+          "name": "replaced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "destination_versions_link_idx": {
+          "name": "destination_versions_link_idx",
+          "columns": [
+            {
+              "expression": "link_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "replaced_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "destination_versions_link_id_links_id_fk": {
+          "name": "destination_versions_link_id_links_id_fk",
+          "tableFrom": "destination_versions",
+          "tableTo": "links",
+          "columnsFrom": [
+            "link_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.links": {
+      "name": "links",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_title": {
+          "name": "display_title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "''"
+        },
+        "holding_message": {
+          "name": "holding_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "expected_at": {
+          "name": "expected_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "progress": {
+          "name": "progress",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "paused": {
+          "name": "paused",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "mapped_url": {
+          "name": "mapped_url",
+          "type": "varchar(2048)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mapped_on": {
+          "name": "mapped_on",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "public_url": {
+          "name": "public_url",
+          "type": "varchar(2048)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "manage_url": {
+          "name": "manage_url",
+          "type": "varchar(2048)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "CASE \n          WHEN mapped_url IS NOT NULL THEN 'ready' \n          ELSE 'pending' \n        END",
+            "type": "stored"
+          }
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "content_type_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content_sub_type": {
+          "name": "content_sub_type",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_secure_url": {
+          "name": "file_secure_url",
+          "type": "varchar(2048)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_public_id": {
+          "name": "file_public_id",
+          "type": "varchar(2048)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_resource_type": {
+          "name": "file_resource_type",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "link_validity": {
+          "name": "link_validity",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now() + interval '30 days'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "links_slug_unique": {
+          "name": "links_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.content_type_enum": {
+      "name": "content_type_enum",
+      "schema": "public",
+      "values": [
+        "Post",
+        "File"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

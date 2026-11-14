@@ -1,0 +1,1 @@
+ALTER TABLE "links" ADD COLUMN "paused" boolean DEFAULT false NOT NULL;

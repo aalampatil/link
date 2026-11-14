@@ -22,39 +22,35 @@ deleted links show an unavailable message.
 
 ---
 
-## Upcoming Rollouts
+## Project lifecycle features
 
-These features are planned and are not available yet. The rollout order may
-change; release dates have not been set.
+- **Expiry controls:** Remaining days, expiration dates, extensions, and renewal.
+- **Custom holding pages:** Project messages, expected availability, and progress.
+- **Pause/resume:** Temporarily return a public link to its holding page.
+- **Destination history:** Retain and restore previous URLs, files, and bundles.
+- **Activity timeline:** Timestamped owner-only records of project changes.
+- **Deadlines and reminders:** Submission deadlines and opt-in email alerts.
+- **Scheduled publishing:** Prepare a private destination and publish it later.
+- **Visitor notifications:** Confirmed opt-in, one ready email, and unsubscribe.
+- **Insights:** Visit phases, last opened time, subscriber and email queue counts.
+- **Submission bundles:** Publish up to 12 labeled links or uploaded resources.
+- **Sharing previews:** Custom titles, descriptions, and thumbnails in public HTML.
+- **Destination monitoring:** Manual/daily checks and optional incident alerts.
 
-### First Rollout: Deadlines and Link Availability
+Read [the feature, deployment, and verification guide](docs/FEATURES.md) for
+behavior, configuration, retention, and test coverage.
 
-- [ ] **Expiry controls:** Show days remaining, warn before expiry, and allow
-      users to extend a link beyond the current 30-day validity period.
-- [ ] **Deadline reminders:** Let users set a project deadline and receive a
-      reminder if the destination is still missing.
-- [ ] **Custom holding pages:** Add a short project message and an expected
-      availability date while work is in progress.
+Email features require server-only `SMTP_URL` and `MAIL_FROM`. Scheduled
+publishing and monitoring require an active job loop (enabled on the API by
+default) or a separate `npm run worker` process. Apply database migrations
+before starting the updated API. `JOBS_ENABLED=false` disables the API's job
+loop when using a separate worker. No external services are provisioned by
+installing this update.
 
-### Next Rollout: Visibility and Destination Management
+### Still planned
 
-- [ ] **Basic analytics:** Show visit counts, the last opened time, and visits
-      received before the destination was connected.
-- [ ] **Destination history:** Record destination changes and allow users to
-      restore a previous URL.
-- [ ] **Custom link names:** Let users choose a readable slug with availability
-      checks.
-- [ ] **Scheduled publishing:** Prepare a destination privately and activate it
-      at a chosen date and time.
-- [ ] **Tags and archives:** Organize links by project or purpose and archive
-      older work without deleting it.
-
-### Later Rollout: Professional Sharing
-
-- [ ] **Password protection:** Require a password before visitors can access a
-      shared destination.
-- [ ] **QR code downloads:** Generate a downloadable QR code for a public link.
-- [ ] **Custom domains:** Share links using a domain owned by the user.
+Custom slugs, tags/archives, password protection, QR downloads, and custom
+domains remain future work.
 
 ---
 
@@ -71,18 +67,19 @@ change; release dates have not been set.
 | `nanoid`             | Short unique link ID generation   |
 | `zod`                | Request validation                |
 | `express-rate-limit` | Rate limiting                     |
+| `nodemailer`         | Configurable SMTP email delivery  |
 | `typescript`         | Type safety                       |
 
 ### Client
 
-| Package | Purpose |
-| ------- | ------- |
-| React + TypeScript | Frontend components and logic |
-| Vite | Development server and production builds |
-| Tailwind CSS | Styling |
-| React Router | Client-side routing |
-| Zustand | Client state |
-| Clerk | Sign-in and sessions |
+| Package            | Purpose                                  |
+| ------------------ | ---------------------------------------- |
+| React + TypeScript | Frontend components and logic            |
+| Vite               | Development server and production builds |
+| Tailwind CSS       | Styling                                  |
+| React Router       | Client-side routing                      |
+| Zustand            | Client state                             |
+| Clerk              | Sign-in and sessions                     |
 
 ---
 

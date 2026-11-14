@@ -2,21 +2,26 @@ import type { NextFunction, Request, Response } from "express";
 import { nanoid } from "nanoid";
 import { db } from "../../db/index.js";
 import ApiError from "../../utils/api-error.js";
-import {
-  validateUrl,
-  detectPostSubType,
-  detectFileSubType,
-  FILE_MIME_TO_SUB_TYPE,
-} from "../../utils/utils.js";
 import { getAuth } from "@clerk/express";
-import { isProduction } from "../../index.js";
-import { linksTable } from "../../db/schema.js";
+import {
+  linksTable,
+  destinationVersions,
+  linkAssets,
+} from "../../db/schema.js";
 import { desc, eq } from "drizzle-orm";
 import { env } from "../../env.js";
+import { z } from "zod";
 import {
-  uploadOnCloudinary,
-  deleteFromCloudinary,
-} from "../../utils/cloudinary.js";
+  assertActive as assertLinkIsActive,
+  extendedValidity,
+} from "./link.policy.js";
+import { ownedLink } from "./link.repository.js";
+import { publicView } from "./link.public.js";
+import { snapshot } from "./link.destination.js";
+import { recordActivity } from "./link.activity.js";
+import { mailConfigured } from "../../jobs/mail.js";
+import { deleteFromCloudinary } from "../../utils/cloudinary.js";
+import { parseBody } from "./link.validation.js";
 
 const slugify = (value: string) =>
   value
@@ -31,21 +36,18 @@ const createSlug = (displayTitle: string) => {
   return baseSlug ? `${baseSlug}-${nanoid(6)}` : nanoid(12);
 };
 
-const assertLinkIsActive = (linkValidity: Date | string | null) => {
-  if (!linkValidity) return;
-  if (new Date(linkValidity).getTime() < Date.now()) {
-    throw ApiError.gone("Link has expired");
-  }
-};
-
 const createLink = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId } = getAuth(req);
     if (!userId) throw ApiError.unauthorised();
 
-    const { displayTitle } = req.body || {};
-    const cleanTitle =
-      typeof displayTitle === "string" ? displayTitle.trim().slice(0, 120) : "";
+    const { displayTitle = "" } = parseBody(
+      z
+        .object({ displayTitle: z.string().trim().max(120).optional() })
+        .strict(),
+      req.body ?? {},
+    );
+    const cleanTitle = displayTitle;
     const slug = createSlug(cleanTitle);
 
     const publicBaseUrl = env.CLIENT;
@@ -89,17 +91,8 @@ const publicLink = async (req: Request, res: Response) => {
   if (!link) throw ApiError.notfound();
   assertLinkIsActive(link.linkValidity);
 
-  res.set(
-    "Cache-Control",
-    "public, max-age=30, s-maxage=120, stale-while-revalidate=300",
-  );
-  res.json({
-    slug: link.slug,
-    status: link.status, // ✅ from computed column
-    displayTitle: link.displayTitle,
-    mappedUrl: link.mappedUrl ?? null,
-    mappedOn: link.mappedOn,
-  });
+  res.set("Cache-Control", "no-store");
+  res.json(publicView(link));
 };
 
 // MANAGE LINK (requires auth + ownership)
@@ -111,125 +104,41 @@ const manageLink = async (req: Request, res: Response) => {
   // console.log(slug);
   if (typeof slug !== "string") throw ApiError.badRequest();
 
-  const [link] = await db
-    .select()
-    .from(linksTable)
-    .where(eq(linksTable.slug, slug));
+  const link = await ownedLink(slug, userId);
+  res
+    .set("Cache-Control", "no-store")
+    .json({ ...link, capabilities: { email: mailConfigured() } });
+};
 
-  if (!link) throw ApiError.notfound();
-  assertLinkIsActive(link.linkValidity);
-  if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
-
-  res.json({
-    slug: link.slug,
-    status: link.status,
-    displayTitle: link.displayTitle,
-    mappedUrl: link.mappedUrl ?? null,
-    mappedOn: link.mappedOn,
+export const extendExpiry = async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  if (!userId) throw ApiError.unauthorised();
+  const input = z
+    .object({ days: z.number().int().min(1).max(365) })
+    .safeParse(req.body);
+  if (!input.success)
+    throw ApiError.badRequest("Choose an extension between 1 and 365 days");
+  const link = await db.transaction(async (tx) => {
+    const current = await ownedLink(String(req.params.slug), userId, tx, true);
+    const [updated] = await tx
+      .update(linksTable)
+      .set({
+        linkValidity: extendedValidity(current.linkValidity, input.data.days),
+        updatedAt: new Date(),
+      })
+      .where(eq(linksTable.id, current.id))
+      .returning();
+    await recordActivity(
+      tx,
+      current.id,
+      `Validity extended by ${input.data.days} days`,
+    );
+    return updated;
   });
+  res.json(link);
 };
 
 //#region
-
-const mapLink = async (req: Request, res: Response) => {
-  const { userId } = getAuth(req);
-  if (!userId) throw ApiError.unauthorised();
-
-  const { slug } = req.params;
-  const { targetUrl, contentType } = req.body || {};
-
-  if (contentType !== "Post" && contentType !== "File") {
-    throw ApiError.badRequest("contentType must be 'Post' or 'File'");
-  }
-
-  const [link] = await db
-    .select()
-    .from(linksTable)
-    .where(eq(linksTable.slug, slug as string));
-
-  if (!link) throw ApiError.notfound();
-  assertLinkIsActive(link.linkValidity);
-  if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
-
-  //post
-  if (contentType === "Post") {
-    if (!slug || typeof targetUrl !== "string") {
-      throw ApiError.badRequest();
-    }
-    const validUrl = validateUrl(targetUrl);
-    const contentSubType = detectPostSubType(validUrl);
-
-    const [link] = await db
-      .update(linksTable)
-      .set({
-        mappedUrl: validUrl,
-        mappedOn: new Date(),
-        updatedAt: new Date(),
-        contentType: "Post",
-        contentSubType,
-      })
-      .where(eq(linksTable.slug, slug as string))
-      .returning();
-
-    if (!link) throw ApiError.notfound();
-    if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
-
-    return res.json({
-      slug: link.slug,
-      status: link.status, // auto from DB
-      mappedUrl: link.mappedUrl,
-      mappedOn: link.mappedOn,
-    });
-  }
-
-  if (contentType === "File") {
-    const file = req.file;
-    if (!file)
-      throw ApiError.badRequest("A file upload is required for File type");
-
-    const ALLOWED_FILE_MIME_TYPES = Object.keys(FILE_MIME_TO_SUB_TYPE);
-
-    if (!ALLOWED_FILE_MIME_TYPES.includes(file.mimetype)) {
-      throw ApiError.badRequest(
-        `Unsupported file type '${file.mimetype}'. Allowed: ${ALLOWED_FILE_MIME_TYPES.join(", ")}`,
-      );
-    }
-
-    const contentSubType = detectFileSubType(file.mimetype);
-    const cloudinaryResponse = await uploadOnCloudinary(file.path);
-
-    if (!cloudinaryResponse) {
-      throw ApiError.internalError("File upload to Cloudinary failed");
-    }
-
-    const [link] = await db
-      .update(linksTable)
-      .set({
-        contentType: "File",
-        contentSubType,
-        mappedUrl: cloudinaryResponse.secure_url,
-        fileSecureURL: cloudinaryResponse.secure_url,
-        filePublicId: cloudinaryResponse.public_id,
-        mappedOn: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(linksTable.slug, slug as string))
-      .returning();
-
-    if (!link) throw ApiError.internalError("failed to map link");
-
-    return res.json({
-      slug: link.slug,
-      status: link.status, // auto from DB
-      mappedUrl: link.mappedUrl,
-      mappedOn: link.mappedOn,
-    });
-  }
-
-  throw ApiError.badRequest("Unsupported content type");
-};
-
-//#endregion
 
 const getAllLinks = async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
@@ -252,24 +161,37 @@ const deleteLink = async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   if (!userId) throw ApiError.unauthorised();
 
-  const { slug } = req.params;
-  if (!slug) throw ApiError.badRequest("Missing slug");
+  await db.transaction(async (tx) => {
+    const link = await ownedLink(String(req.params.slug), userId, tx, true);
+    const versions = await tx
+      .select()
+      .from(destinationVersions)
+      .where(eq(destinationVersions.linkId, link.id));
+    const assets = new Map(
+      [snapshot(link), ...versions.map((v) => v.destination)]
+        .filter((v) => v?.filePublicId)
+        .map((v) => [v!.filePublicId!, v!]),
+    );
+    for (const asset of assets.values())
+      await deleteFromCloudinary(
+        asset.filePublicId!,
+        asset.fileResourceType ?? "image",
+      );
+    const retained = await tx
+      .select()
+      .from(linkAssets)
+      .where(eq(linkAssets.linkId, link.id));
+    for (const asset of retained)
+      if (!assets.has(asset.publicId))
+        await deleteFromCloudinary(
+          asset.publicId,
+          asset.resourceType as "image" | "video" | "raw",
+        );
 
-  const [link] = await db
-    .select()
-    .from(linksTable)
-    .where(eq(linksTable.slug, slug as string));
-
-  if (!link) throw ApiError.notfound("Link not found");
-  if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
-
-  if (link.contentType === "File" && link.filePublicId) {
-    await deleteFromCloudinary(link.filePublicId);
-  }
-
-  await db.delete(linksTable).where(eq(linksTable.slug, slug as string));
+    await tx.delete(linksTable).where(eq(linksTable.id, link.id));
+  });
 
   return res.status(200).json({ message: "Link deleted" });
 };
 
-export { createLink, publicLink, manageLink, mapLink, getAllLinks, deleteLink };
+export { createLink, publicLink, manageLink, getAllLinks, deleteLink };

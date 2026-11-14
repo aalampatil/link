@@ -3,6 +3,8 @@ import { type Request } from "express";
 import fs from "fs";
 import path from "path";
 import { FILE_MIME_TO_SUB_TYPE } from "../utils/utils.js";
+import { randomUUID } from "node:crypto";
+import ApiError from "../utils/api-error.js";
 
 const uploadDir = path.join(process.cwd(), "public", "temp");
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -23,7 +25,7 @@ const storage: StorageEngine = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void,
   ) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    cb(null, `${randomUUID()}${path.extname(file.originalname).toLowerCase().replace(/[^a-z0-9.]/g, "").slice(0, 12)}`);
   },
 });
 
@@ -32,7 +34,7 @@ const fileFilter: multer.Options["fileFilter"] = (req, file, cb) => {
     cb(null, true);
   } else {
     cb(
-      new Error(
+      ApiError.badRequest(
         `Invalid file type. Allowed: ${allowedMimeTypes.join(", ")}`,
       ),
     );
