@@ -14,6 +14,7 @@ import { mapDestination, ensureWritableLink, getHistory, restoreDestination } fr
 import { getActivity } from "./link.activity.js";
 import { updateDeadline } from "./link.deadline.js";
 import { cancelSchedule } from "./link.schedule.js";
+import { getAnalytics } from "./link.analytics.js";
 const linkRouter = Router();
 
 linkRouter.post("/create", requireAuth(), createLink);
@@ -22,6 +23,7 @@ linkRouter.get("/manage/:slug", requireAuth(), manageLink);
 linkRouter.post("/:slug/map", requireAuth(), ensureWritableLink, upload.single("file"), mapDestination);
 linkRouter.get("/:slug/history", requireAuth(), getHistory);
 linkRouter.get("/:slug/activity", requireAuth(), getActivity);
+linkRouter.get("/:slug/analytics", requireAuth(), getAnalytics);
 linkRouter.post("/:slug/restore", requireAuth(), restoreDestination);
 linkRouter.get("/get-all", requireAuth(), getAllLinks);
 linkRouter.delete("/delete/:slug", requireAuth(), deleteLink);

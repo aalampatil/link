@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { axiosApi, publicAxiosApi } from "@/config/axiosApi";
 import { toast } from "react-toastify";
+import { trackVisit } from "@/features/links/visits";
 
 type AxiosErrorResponse = {
   response?: {
@@ -237,6 +238,7 @@ export const usePublicLinkStore = create<PublicLinkStore>((set) => ({
     try {
       set({ isLoading: true, data: null, error: null });
       const res = await publicAxiosApi.get(`/link/public/${slug}`);
+      await trackVisit(slug);
       const link = res.data.mappedUrl;
       if (link) {
         window.location.replace(link);

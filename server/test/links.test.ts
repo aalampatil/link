@@ -8,6 +8,7 @@ import { processMailJobs } from "../src/jobs/mail.js";
 import { mailJobs } from "../src/db/schema.js";
 import { publishScheduled } from "../src/jobs/publishing.js";
 import { enqueueReadyNotifications } from "../src/jobs/notifications.js";
+import { randomUUID } from "node:crypto";
 let app: Awaited<ReturnType<typeof testApp>>;
 let slug: string;
 before(async () => {
@@ -157,4 +158,24 @@ test("visitor notifications require confirmation, send once, defer while paused,
   const publicData = await (await fetch(`${app.url}/public/${slug}`)).json();
   assert.equal(publicData.reminderEmail, undefined);
   assert.equal(publicData.subscriptions, undefined);
+});
+
+test("visit analytics deduplicate sessions, distinguish phases, and stay owner-only", async () => {
+  const visitKey = randomUUID();
+  const record = (key: string) => fetch(`${app.url}/public/${slug}/visit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ visitKey: key }) });
+  assert.equal((await record(visitKey)).status, 204);
+  assert.equal((await record(visitKey)).status, 204);
+  await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ paused: true }) });
+  await record(randomUUID());
+  await db.update(linksTable).set({ paused: false, mappedUrl: null }).where(eq(linksTable.slug, slug));
+  await record(randomUUID());
+  const data = await (await fetch(`${app.url}/${slug}/analytics`, { headers: ownerHeaders() })).json();
+  assert.equal(data.visits.total, 3);
+  assert.equal(data.visits.ready, 1);
+  assert.equal(data.visits.paused, 1);
+  assert.equal(data.visits.waiting, 1);
+  assert.ok(data.visits.lastOpened);
+  assert.equal(data.daily[0].total, 3);
+  assert.equal((await fetch(`${app.url}/${slug}/analytics`, { headers: ownerHeaders("other") })).status, 404);
+  await db.update(linksTable).set({ mappedUrl: "https://example.com/finished" }).where(eq(linksTable.slug, slug));
 });

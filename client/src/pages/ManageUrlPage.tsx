@@ -21,6 +21,7 @@ import HistoryPanel from "@/features/links/HistoryPanel";
 import ActivityPanel from "@/features/links/ActivityPanel";
 import DeadlinePanel from "@/features/links/DeadlinePanel";
 import SchedulePanel from "@/features/links/SchedulePanel";
+import AnalyticsPanel from "@/features/links/AnalyticsPanel";
 
 export default function ManageUrlPage() {
   const [tab, setTab] = useState("destination");
@@ -98,6 +99,7 @@ export default function ManageUrlPage() {
         <nav className="mb-6 flex flex-wrap gap-2" aria-label="Link settings sections">
           {[{ id: "destination", label: "Destination" }, { id: "settings", label: "Project settings" }].map(item => <button key={item.id} type="button" aria-pressed={tab === item.id} onClick={() => setTab(item.id)} className={`rounded-lg border px-4 py-2 text-sm ${tab === item.id ? "bg-main text-main-foreground" : "bg-secondary-background"}`}>{item.label}</button>)}
         </nav>
+        <Button type="button" variant="outline" className="mb-6 mr-2" aria-pressed={tab === "insights"} onClick={() => setTab("insights")}>Insights</Button>
         <Button type="button" variant="outline" className="mb-6" aria-pressed={tab === "history"} onClick={() => setTab("history")}>History & activity</Button>
         <div className="grid items-start gap-6 md:grid-cols-[1fr_280px]">
           <div className="space-y-6">
@@ -193,6 +195,7 @@ export default function ManageUrlPage() {
           {tab === "settings" && <DeadlinePanel link={data} onUpdated={() => fetchLink(slug!)} />}
           {tab === "history" && <HistoryPanel key={data.updatedAt} slug={data.slug} onUpdated={() => fetchLink(slug!)} />}
           {tab === "history" && <ActivityPanel key={`activity-${data.updatedAt}`} slug={data.slug} />}
+          {tab === "insights" && <AnalyticsPanel slug={data.slug} />}
           </div>
           <aside className="panel overflow-hidden">
             <div className="border-b border-border bg-muted px-5 py-4">

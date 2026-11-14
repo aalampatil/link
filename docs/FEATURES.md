@@ -83,6 +83,15 @@ read-only; confirmation and unsubscribe require an explicit button click.
 Subscriber details never appear in public responses. Publication notifications
 wait while a link is paused or expired, and resume when it becomes available.
 
+## Visit analytics
+
+Insights shows total visits, waiting/ready/paused visits, last opened time,
+14-day UTC activity, confirmed/notified subscriber counts, and queued/failed
+email deliveries. A visit is an approximate 30-minute browser session deduped
+by link and a random session key. No IP address, referrer, or cookie is stored.
+Crawler requests to the public JSON endpoint do not themselves count as visits.
+Analytics is owner-only. Deleting a link removes its visit records.
+
 ## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests

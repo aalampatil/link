@@ -107,3 +107,11 @@ export const subscriptions = pgTable("link_subscriptions", {
   notifiedAt: timestamp("notified_at", { withTimezone: true }),
   requestedAt: timestamp("requested_at", { withTimezone: true }).defaultNow().notNull(),
 }, table => [uniqueIndex("subscriptions_email_idx").on(table.linkId, table.email), index("subscriptions_verified_idx").on(table.linkId, table.verifiedAt)]);
+
+export const linkVisits = pgTable("link_visits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  linkId: uuid("link_id").notNull().references(() => linksTable.id, { onDelete: "cascade" }),
+  visitKey: uuid("visit_key").notNull(),
+  phase: varchar("phase", { length: 10 }).notNull(),
+  openedAt: timestamp("opened_at", { withTimezone: true }).defaultNow().notNull(),
+}, table => [uniqueIndex("link_visits_session_idx").on(table.linkId, table.visitKey), index("link_visits_date_idx").on(table.linkId, table.openedAt)]);
