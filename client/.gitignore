@@ -1,4 +1,7 @@
 # Logs
+/test/.browser-state.json
+/test-results/
+/playwright-report/
 logs
 *.log
 npm-debug.log*
