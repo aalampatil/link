@@ -7,8 +7,11 @@ import {
   text,
   integer,
   boolean,
+  jsonb,
+  index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import type { Destination } from "../modules/link/link.types.js";
 
 export const contentTypeEnum = pgEnum("content_type_enum", ["Post", "File"]);
 
@@ -41,7 +44,16 @@ export const linksTable = pgTable("links", {
   contentSubType: varchar("content_sub_type", { length: 40 }), // x, yt, linkedin, pdf, image, docx,
   fileSecureURL: varchar("file_secure_url", { length: 2048 }),
   filePublicId: varchar("file_public_id", { length: 2048 }),
+  fileResourceType: varchar("file_resource_type", { length: 10 }),
   linkValidity: timestamp("link_validity", { withTimezone: true }).default(
     sql`now() + interval '30 days'`,
   ),
 });
+
+export const destinationVersions = pgTable("destination_versions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  linkId: uuid("link_id").notNull().references(() => linksTable.id, { onDelete: "cascade" }),
+  destination: jsonb("destination").$type<Destination>().notNull(),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  replacedAt: timestamp("replaced_at", { withTimezone: true }).defaultNow().notNull(),
+}, table => [index("destination_versions_link_idx").on(table.linkId, table.replacedAt)]);

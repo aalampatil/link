@@ -35,14 +35,14 @@ const uploadOnCloudinary = async (
   }
 };
 
-const deleteFromCloudinary = async (public_id: string): Promise<any> => {
+const deleteFromCloudinary = async (public_id: string, resourceType: "image" | "video" | "raw" = "image") => {
   try {
     if (!public_id) {
       throw new Error("Missing public_id for Cloudinary deletion");
     }
 
     const result = await cloudinary.uploader.destroy(public_id, {
-      resource_type: "auto",
+      resource_type: resourceType,
     });
 
     if (result.result !== "ok" && result.result !== "not found") {

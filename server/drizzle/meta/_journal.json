@@ -85,6 +85,13 @@
       "when": 1794648553061,
       "tag": "0011_pause_links",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794648793896,
+      "tag": "0012_destination_history",
+      "breakpoints": true
     }
   ]
 }

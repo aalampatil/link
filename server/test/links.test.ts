@@ -55,3 +55,16 @@ test("pause hides the destination and resume restores it without changing the pu
   await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ paused: false }) });
   assert.equal((await (await fetch(`${app.url}/public/${slug}`)).json()).mappedUrl, target);
 });
+
+test("history preserves previous destinations and restores only a version owned by this link", async () => {
+  await fetch(`${app.url}/${slug}/map`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ contentType: "Post", targetUrl: "https://example.com/revision-2" }) });
+  const response = await fetch(`${app.url}/${slug}/history`, { headers: ownerHeaders() });
+  const { versions } = await response.json();
+  assert.ok(versions.length >= 1);
+  assert.equal(versions[0].destination.mappedUrl, "https://example.com/finished");
+  assert.equal((await fetch(`${app.url}/${slug}/history`, { headers: ownerHeaders("other") })).status, 404);
+  assert.equal((await fetch(`${app.url}/${slug}/restore`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ versionId: "bad" }) })).status, 400);
+  const restored = await fetch(`${app.url}/${slug}/restore`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ versionId: versions[0].id }) });
+  assert.equal(restored.status, 200);
+  assert.equal((await restored.json()).mappedUrl, "https://example.com/finished");
+});

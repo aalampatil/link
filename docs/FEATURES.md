@@ -31,6 +31,11 @@ to the existing destination; it does not extend the expiration date.
 
 ## Local integration tests
 
+Destination history retains previous URLs and uploaded files, with the original
+publish time and replacement time. Restoring creates another history entry;
+it never destroys the current version. Versions are private to the owner.
+Deleting a link also deletes its retained Cloudinary files and database history.
+
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests
 refuse remote database hosts and never use the application's `DATABASE_URL`.
 The default test URL uses port 55434 and database/user/password `link_test`.

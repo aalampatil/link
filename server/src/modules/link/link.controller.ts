@@ -9,13 +9,14 @@ import {
   FILE_MIME_TO_SUB_TYPE,
 } from "../../utils/utils.js";
 import { getAuth } from "@clerk/express";
-import { linksTable } from "../../db/schema.js";
+import { linksTable, destinationVersions } from "../../db/schema.js";
 import { desc, eq } from "drizzle-orm";
 import { env } from "../../env.js";
 import { z } from "zod";
 import { assertActive as assertLinkIsActive, extendedValidity } from "./link.policy.js";
 import { ownedLink } from "./link.repository.js";
 import { publicView } from "./link.public.js";
+import { snapshot } from "./link.destination.js";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
@@ -119,106 +120,6 @@ export const extendExpiry = async (req: Request, res: Response) => {
 
 //#region
 
-const mapLink = async (req: Request, res: Response) => {
-  const { userId } = getAuth(req);
-  if (!userId) throw ApiError.unauthorised();
-
-  const { slug } = req.params;
-  const { targetUrl, contentType } = req.body || {};
-
-  if (contentType !== "Post" && contentType !== "File") {
-    throw ApiError.badRequest("contentType must be 'Post' or 'File'");
-  }
-
-  const [link] = await db
-    .select()
-    .from(linksTable)
-    .where(eq(linksTable.slug, slug as string));
-
-  if (!link) throw ApiError.notfound();
-  assertLinkIsActive(link.linkValidity);
-  if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
-
-  //post
-  if (contentType === "Post") {
-    if (!slug || typeof targetUrl !== "string") {
-      throw ApiError.badRequest();
-    }
-    const validUrl = validateUrl(targetUrl);
-    const contentSubType = detectPostSubType(validUrl);
-
-    const [link] = await db
-      .update(linksTable)
-      .set({
-        mappedUrl: validUrl,
-        mappedOn: new Date(),
-        updatedAt: new Date(),
-        contentType: "Post",
-        contentSubType,
-      })
-      .where(eq(linksTable.slug, slug as string))
-      .returning();
-
-    if (!link) throw ApiError.notfound();
-    if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
-
-    return res.json({
-      slug: link.slug,
-      status: link.status, // auto from DB
-      mappedUrl: link.mappedUrl,
-      mappedOn: link.mappedOn,
-    });
-  }
-
-  if (contentType === "File") {
-    const file = req.file;
-    if (!file)
-      throw ApiError.badRequest("A file upload is required for File type");
-
-    const ALLOWED_FILE_MIME_TYPES = Object.keys(FILE_MIME_TO_SUB_TYPE);
-
-    if (!ALLOWED_FILE_MIME_TYPES.includes(file.mimetype)) {
-      throw ApiError.badRequest(
-        `Unsupported file type '${file.mimetype}'. Allowed: ${ALLOWED_FILE_MIME_TYPES.join(", ")}`,
-      );
-    }
-
-    const contentSubType = detectFileSubType(file.mimetype);
-    const cloudinaryResponse = await uploadOnCloudinary(file.path);
-
-    if (!cloudinaryResponse) {
-      throw ApiError.internalError("File upload to Cloudinary failed");
-    }
-
-    const [link] = await db
-      .update(linksTable)
-      .set({
-        contentType: "File",
-        contentSubType,
-        mappedUrl: cloudinaryResponse.secure_url,
-        fileSecureURL: cloudinaryResponse.secure_url,
-        filePublicId: cloudinaryResponse.public_id,
-        mappedOn: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(linksTable.slug, slug as string))
-      .returning();
-
-    if (!link) throw ApiError.internalError("failed to map link");
-
-    return res.json({
-      slug: link.slug,
-      status: link.status, // auto from DB
-      mappedUrl: link.mappedUrl,
-      mappedOn: link.mappedOn,
-    });
-  }
-
-  throw ApiError.badRequest("Unsupported content type");
-};
-
-//#endregion
-
 const getAllLinks = async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   if (!userId) throw ApiError.unauthorised();
@@ -251,13 +152,13 @@ const deleteLink = async (req: Request, res: Response) => {
   if (!link) throw ApiError.notfound("Link not found");
   if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
 
-  if (link.contentType === "File" && link.filePublicId) {
-    await deleteFromCloudinary(link.filePublicId);
-  }
+  const versions = await db.select().from(destinationVersions).where(eq(destinationVersions.linkId, link.id));
+  const assets = new Map([snapshot(link), ...versions.map(v => v.destination)].filter(v => v?.filePublicId).map(v => [v!.filePublicId!, v!]));
+  for (const asset of assets.values()) await deleteFromCloudinary(asset.filePublicId!, asset.fileResourceType ?? "image");
 
   await db.delete(linksTable).where(eq(linksTable.slug, slug as string));
 
   return res.status(200).json({ message: "Link deleted" });
 };
 
-export { createLink, publicLink, manageLink, mapLink, getAllLinks, deleteLink };
+export { createLink, publicLink, manageLink, getAllLinks, deleteLink };
