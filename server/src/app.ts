@@ -1,6 +1,6 @@
 import express from "express";
 import linkRouter from "./modules/link/link.routes.js";
-import { publicLink } from "./modules/link/link.controller.js";
+import { publicRouter } from "./modules/link/link.public-routes.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import { clerkMiddleware } from "@clerk/express";
@@ -49,7 +49,7 @@ function createApp() {
     res.send("OK 200, check");
   });
 
-  app.get("/api/link/public/:slug", publicLink);
+  app.use("/api/link", publicRouter);
 
   app.use(clerkMiddleware());
   app.use("/api/link", linkRouter);

@@ -7,6 +7,7 @@ import { enqueueReminders } from "../src/jobs/reminders.js";
 import { processMailJobs } from "../src/jobs/mail.js";
 import { mailJobs } from "../src/db/schema.js";
 import { publishScheduled } from "../src/jobs/publishing.js";
+import { enqueueReadyNotifications } from "../src/jobs/notifications.js";
 let app: Awaited<ReturnType<typeof testApp>>;
 let slug: string;
 before(async () => {
@@ -125,4 +126,35 @@ test("scheduled destinations stay private, publish once when due, and can be can
   assert.equal((await fetch(`${app.url}/${slug}/schedule`, { method: "DELETE", headers: ownerHeaders("other") })).status, 404);
   assert.equal((await fetch(`${app.url}/${slug}/schedule`, { method: "DELETE", headers: ownerHeaders() })).status, 200);
   assert.equal(await publishScheduled(new Date(scheduledAt.getTime() + 1)), 0);
+});
+
+test("visitor notifications require confirmation, send once, defer while paused, and support unsubscribe", async () => {
+  const subscribeUrl = `${app.url}/public/${slug}/subscribe`;
+  const body = { email: "visitor@example.test", consent: true, website: "" };
+  assert.equal((await fetch(subscribeUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, consent: false }) })).status, 400);
+  for (let i = 0; i < 2; i++) assert.equal((await fetch(subscribeUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).status, 202);
+  const messages: { subject: string; body: string }[] = [];
+  await processMailJobs(async mail => { messages.push(mail); }, new Date(Date.now() + 1000));
+  const verification = messages.find(mail => mail.subject === "Confirm your project notification");
+  assert.ok(verification);
+  assert.equal(messages.filter(mail => mail.subject === "Confirm your project notification").length, 1);
+  await enqueueReadyNotifications();
+  assert.equal(messages.filter(mail => mail.subject.endsWith("is ready")).length, 0);
+  const token = verification.body.match(/confirm\?token=([a-f0-9]{64})/)![1];
+  const removal = verification.body.match(/unsubscribe\?token=([a-f0-9]{64})/)![1];
+  const headers = { "Content-Type": "application/json" };
+  const confirm = await fetch(`${app.url}/public/subscriptions/confirm`, { method: "POST", headers, body: JSON.stringify({ token }) });
+  assert.equal(confirm.status, 200);
+  await enqueueReadyNotifications();
+  await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ paused: true }) });
+  await processMailJobs(async mail => { messages.push(mail); }, new Date(Date.now() + 1000));
+  assert.equal(messages.filter(mail => mail.subject.endsWith("is ready")).length, 0);
+  await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ paused: false }) });
+  await processMailJobs(async mail => { messages.push(mail); }, new Date(Date.now() + 120000));
+  await enqueueReadyNotifications(); await processMailJobs(async mail => { messages.push(mail); }, new Date(Date.now() + 120000));
+  assert.equal(messages.filter(mail => mail.subject.endsWith("is ready")).length, 1);
+  assert.equal((await fetch(`${app.url}/public/subscriptions/unsubscribe`, { method: "POST", headers, body: JSON.stringify({ token: removal }) })).status, 200);
+  const publicData = await (await fetch(`${app.url}/public/${slug}`)).json();
+  assert.equal(publicData.reminderEmail, undefined);
+  assert.equal(publicData.subscriptions, undefined);
 });

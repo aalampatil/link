@@ -2,11 +2,13 @@ import { env } from "../env.js";
 import { enqueueReminders } from "./reminders.js";
 import { mailConfigured, processMailJobs } from "./mail.js";
 import { publishScheduled } from "./publishing.js";
+import { enqueueReadyNotifications } from "./notifications.js";
 
 export async function runJobs(signal?: AbortSignal) {
   await publishScheduled(new Date(), signal);
   if (mailConfigured()) {
     await enqueueReminders(new Date(), signal);
+    await enqueueReadyNotifications(new Date(), signal);
     await processMailJobs(undefined, new Date(), signal);
   }
 }

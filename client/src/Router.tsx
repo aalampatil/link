@@ -11,6 +11,7 @@ const ManageUrlPage = lazy(() => import("./pages/ManageUrlPage"));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const GetAllLinks = lazy(() => import("./pages/GetAllLinks"));
+const NotificationPage = lazy(() => import("./pages/NotificationPage"));
 
 const pageFallback = (
   <div className="flex min-h-screen items-center justify-center">
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
             path: "l/:slug",
             element: withSuspense(<PublicUrl />),
           },
+          { path: "notifications/:action", element: withSuspense(<NotificationPage />) },
           {
             path: "manage/:slug",
             element: withSuspense(

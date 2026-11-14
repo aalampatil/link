@@ -73,6 +73,16 @@ and keeps a paused link paused. Owners can cancel a schedule. Publishing or
 restoring a destination immediately clears an older schedule. Extend expiry
 before scheduling beyond it. Retained draft uploads are removed on link deletion.
 
+## Visitor notifications
+
+Holding pages offer opt-in notifications when SMTP is configured. Visitors must
+confirm their email through a 24-hour token before receiving one ready email.
+Repeat requests are throttled and deduplicated; confirmation tokens are hashed
+in the database. Each email includes an unsubscribe link. Email link visits are
+read-only; confirmation and unsubscribe require an explicit button click.
+Subscriber details never appear in public responses. Publication notifications
+wait while a link is paused or expired, and resume when it becomes available.
+
 ## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests

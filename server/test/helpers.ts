@@ -11,13 +11,16 @@ Object.assign(process.env, {
   NODE_ENV: "test", DATABASE_URL: testUrl, CLIENT: "http://localhost:5173",
   CLERK_PUBLISHABLE_KEY: "pk_test_bG9jYWxob3N0JA==", CLERK_SECRET_KEY: "sk_test_placeholder",
   CLOUDINARY_CLOUD_NAME: "test", CLOUDINARY_API_KEY: "test", CLOUDINARY_API_SECRET: "test",
+  SMTP_URL: "smtp://localhost:11025", MAIL_FROM: "Link <link@example.test>",
 });
 export const { db } = await import("../src/db/index.js");
 const { default: router } = await import("../src/modules/link/link.routes.js");
+const { publicRouter } = await import("../src/modules/link/link.public-routes.js");
 export async function testApp() {
   await migrate(db, { migrationsFolder: fileURLToPath(new URL("../drizzle", import.meta.url)) });
   const app = express();
   app.use(express.json());
+  app.use("/api/link", publicRouter);
   app.use((req, _res, next) => {
     // Only this isolated test app accepts a synthetic identity. Production uses Clerk.
     Object.defineProperty(req, "auth", { value: () => ({ tokenType: "session_token", userId: req.headers["x-test-owner"] ?? null }) });

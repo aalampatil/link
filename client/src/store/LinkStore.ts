@@ -32,6 +32,7 @@ export type LinkData = {
   reminderHours: number;
   remindersEnabled: boolean;
   capabilities?: { email: boolean };
+  notificationsAvailable?: boolean;
   scheduledAt: string | null;
   scheduledDestination: { mappedUrl: string } | null;
 };

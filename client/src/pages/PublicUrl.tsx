@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePublicLinkStore } from "@/store/LinkStore";
+import SubscribeForm from "@/features/links/SubscribeForm";
 
 export default function PublicUrl() {
   const { slug } = useParams();
@@ -70,6 +71,7 @@ export default function PublicUrl() {
           </div>
         )}
         <div className="mt-12 border-t border-border pt-6">
+          {data?.notificationsAvailable && <SubscribeForm slug={data.slug} />}
           <Link to="/" className="quiet-link inline-flex items-center gap-2">
             {data ? (
               <>

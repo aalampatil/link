@@ -9,6 +9,7 @@ import {
   boolean,
   jsonb,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import type { Destination } from "../modules/link/link.types.js";
@@ -93,3 +94,16 @@ export const linkAssets = pgTable("link_assets", {
   publicId: varchar("public_id", { length: 2048 }).notNull(),
   resourceType: varchar("resource_type", { length: 10 }).notNull(),
 }, table => [index("link_assets_link_idx").on(table.linkId)]);
+
+export const subscriptions = pgTable("link_subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  linkId: uuid("link_id").notNull().references(() => linksTable.id, { onDelete: "cascade" }),
+  email: varchar("email", { length: 320 }).notNull(),
+  verificationHash: varchar("verification_hash", { length: 64 }).notNull(),
+  verificationExpiresAt: timestamp("verification_expires_at", { withTimezone: true }).notNull(),
+  unsubscribeHash: varchar("unsubscribe_hash", { length: 64 }).notNull(),
+  unsubscribeToken: varchar("unsubscribe_token", { length: 64 }).notNull(),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
+  notifiedAt: timestamp("notified_at", { withTimezone: true }),
+  requestedAt: timestamp("requested_at", { withTimezone: true }).defaultNow().notNull(),
+}, table => [uniqueIndex("subscriptions_email_idx").on(table.linkId, table.email), index("subscriptions_verified_idx").on(table.linkId, table.verifiedAt)]);
