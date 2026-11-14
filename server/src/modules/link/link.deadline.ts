@@ -12,7 +12,7 @@ import { recordActivity } from "./link.activity.js";
 
 export async function verifiedOwnerEmail(ownerId: string) {
   const user = await clerkClient.users.getUser(ownerId);
-  const email = user.emailAddresses.find((e: { id: string; emailAddress: string; verification?: { status: string } | null }) => e.id === user.primaryEmailAddressId && e.verification?.status === "verified");
+  const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId && e.verification?.status === "verified");
   if (!email) throw ApiError.badRequest("Verify your primary account email before enabling email alerts");
   return email.emailAddress;
 }

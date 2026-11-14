@@ -14,6 +14,7 @@ const envSchema = z.object({
   MAIL_FROM: z.string().optional(),
   JOBS_ENABLED: z.enum(["true", "false"]).default("true"),
   JOBS_INTERVAL_MS: z.coerce.number().int().min(1000).default(60000),
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
 });
 
 function createEnv(env: NodeJS.ProcessEnv) {

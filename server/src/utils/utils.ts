@@ -26,6 +26,7 @@ function validateUrl(raw: string): string {
   if (url.protocol !== "http:" && url.protocol !== "https:") {
     throw ApiError.badRequest("targetUrl must be http(s)");
   }
+  if (url.username || url.password) throw ApiError.badRequest("URLs must not contain credentials");
 
   return url.toString();
 }
@@ -47,6 +48,7 @@ const FILE_MIME_TO_SUB_TYPE: Record<string, string> = {
   "image/webp": "image",
   "video/mp4": "video",
   "video/mkv": "video",
+  "video/x-matroska": "video",
 };
 
 function detectPostSubType(url: string): string | null {

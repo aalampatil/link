@@ -60,6 +60,8 @@ export async function mapDestination(req: Request, res: Response) {
     } else if (req.body?.contentType === "Post") {
       const input = parseBody(z.object({ targetUrl: z.string().max(2048) }), req.body);
       const url = validateUrl(input.targetUrl);
+      const parsed = new URL(url);
+      if (parsed.origin === new URL(env.CLIENT).origin && parsed.pathname.replace(/\/$/, "") === `/l/${String(req.params.slug)}`) throw ApiError.badRequest("A link cannot redirect to itself");
       destination = { mappedUrl: url, contentType: "Post", contentSubType: detectPostSubType(url), fileSecureURL: null, filePublicId: null, fileResourceType: null };
     } else if (req.body?.contentType === "File") {
       if (!req.file) throw ApiError.badRequest("Choose a file to upload");

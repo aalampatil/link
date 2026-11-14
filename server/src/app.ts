@@ -7,10 +7,11 @@ import { clerkMiddleware } from "@clerk/express";
 import type { ErrorRequestHandler, Response } from "express";
 import ApiError from "./utils/api-error.js";
 import { env } from "./env.js";
+import multer from "multer";
 
 function createApp() {
   const app = express();
-  // app.set("trust proxy", 1);
+  app.set("trust proxy", env.TRUST_PROXY_HOPS);
 
   const allowedOrigins = [
     "http://localhost:5173",
@@ -31,9 +32,9 @@ function createApp() {
 
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 30,
+    max: 300,
     message: {
-      error: "Too many requests, please try again later.",
+      message: "Too many requests, please try again later.",
     },
     skip: (req) => req.method === "OPTIONS", // ⭐ IMPORTANT
     standardHeaders: true,
@@ -44,6 +45,7 @@ function createApp() {
   app.use(express.json({ limit: "5mb" }));
   app.use(express.urlencoded({ extended: true }));
   app.use(limiter);
+  app.use("/api", (_req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
 
   app.get("/", (_, res: Response) => {
     res.send("OK 200, check");
@@ -60,6 +62,10 @@ function createApp() {
   });
 
   const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+    if (err instanceof multer.MulterError) {
+      res.status(err.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ message: err.code === "LIMIT_FILE_SIZE" ? "Files must be 50 MB or smaller" : "Invalid file upload" });
+      return;
+    }
     if (err instanceof ApiError) {
       res.status(err.statusCode).json({ message: err.message });
       return;

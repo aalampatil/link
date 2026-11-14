@@ -243,3 +243,12 @@ test("manual health checks are owner-scoped and do not fetch private destination
   assert.equal(response.status, 200);
   assert.equal((await response.json()).healthResults[0].status, "unsupported");
 });
+
+test("protected routes return JSON 401 without a session and reject unsafe destinations", async () => {
+  const response = await fetch(`${app.url}/manage/${slug}`);
+  assert.equal(response.status, 401);
+  assert.match((await response.json()).message, /sign in/i);
+  for (const targetUrl of [`http://localhost:5173/l/${slug}`, "https://user:password@example.com/secret"]) {
+    assert.equal((await fetch(`${app.url}/${slug}/map`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ contentType: "Post", targetUrl }) })).status, 400);
+  }
+});

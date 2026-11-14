@@ -2,12 +2,6 @@ import type { NextFunction, Request, Response } from "express";
 import { nanoid } from "nanoid";
 import { db } from "../../db/index.js";
 import ApiError from "../../utils/api-error.js";
-import {
-  validateUrl,
-  detectPostSubType,
-  detectFileSubType,
-  FILE_MIME_TO_SUB_TYPE,
-} from "../../utils/utils.js";
 import { getAuth } from "@clerk/express";
 import { linksTable, destinationVersions, linkAssets } from "../../db/schema.js";
 import { desc, eq } from "drizzle-orm";
@@ -19,10 +13,8 @@ import { publicView } from "./link.public.js";
 import { snapshot } from "./link.destination.js";
 import { recordActivity } from "./link.activity.js";
 import { mailConfigured } from "../../jobs/mail.js";
-import {
-  uploadOnCloudinary,
-  deleteFromCloudinary,
-} from "../../utils/cloudinary.js";
+import { deleteFromCloudinary } from "../../utils/cloudinary.js";
+import { parseBody } from "./link.validation.js";
 
 const slugify = (value: string) =>
   value
@@ -42,9 +34,8 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
     const { userId } = getAuth(req);
     if (!userId) throw ApiError.unauthorised();
 
-    const { displayTitle } = req.body || {};
-    const cleanTitle =
-      typeof displayTitle === "string" ? displayTitle.trim().slice(0, 120) : "";
+    const { displayTitle = "" } = parseBody(z.object({ displayTitle: z.string().trim().max(120).optional() }).strict(), req.body ?? {});
+    const cleanTitle = displayTitle;
     const slug = createSlug(cleanTitle);
 
     const publicBaseUrl = env.CLIENT;
@@ -144,24 +135,16 @@ const deleteLink = async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   if (!userId) throw ApiError.unauthorised();
 
-  const { slug } = req.params;
-  if (!slug) throw ApiError.badRequest("Missing slug");
-
-  const [link] = await db
-    .select()
-    .from(linksTable)
-    .where(eq(linksTable.slug, slug as string));
-
-  if (!link) throw ApiError.notfound("Link not found");
-  if (link.ownerId !== userId) throw ApiError.forbidden("Not your link");
-
-  const versions = await db.select().from(destinationVersions).where(eq(destinationVersions.linkId, link.id));
+  await db.transaction(async tx => {
+  const link = await ownedLink(String(req.params.slug), userId, tx, true);
+  const versions = await tx.select().from(destinationVersions).where(eq(destinationVersions.linkId, link.id));
   const assets = new Map([snapshot(link), ...versions.map(v => v.destination)].filter(v => v?.filePublicId).map(v => [v!.filePublicId!, v!]));
   for (const asset of assets.values()) await deleteFromCloudinary(asset.filePublicId!, asset.fileResourceType ?? "image");
-  const retained = await db.select().from(linkAssets).where(eq(linkAssets.linkId, link.id));
+  const retained = await tx.select().from(linkAssets).where(eq(linkAssets.linkId, link.id));
   for (const asset of retained) if (!assets.has(asset.publicId)) await deleteFromCloudinary(asset.publicId, asset.resourceType as "image" | "video" | "raw");
 
-  await db.delete(linksTable).where(eq(linksTable.slug, slug as string));
+  await tx.delete(linksTable).where(eq(linksTable.id, link.id));
+  });
 
   return res.status(200).json({ message: "Link deleted" });
 };
