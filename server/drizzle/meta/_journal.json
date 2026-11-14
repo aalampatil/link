@@ -71,6 +71,13 @@
       "when": 1794648179411,
       "tag": "0009_expiry_timezone",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794648428985,
+      "tag": "0010_holding_pages",
+      "breakpoints": true
     }
   ]
 }

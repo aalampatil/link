@@ -16,6 +16,13 @@ Migration `0009` treats existing expiration timestamps as UTC and stores future
 values with a time zone. Public destination responses use `Cache-Control:
 no-store` so an old cached holding page cannot delay a destination update.
 
+## Custom holding pages
+
+Project settings include an editable name, message, expected availability date,
+and progress percentage. Visitors see these while no destination is available.
+Dates are entered in the owner's local time and stored as UTC instants.
+Only the owner can edit settings; public responses never expose ownership data.
+
 ## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests

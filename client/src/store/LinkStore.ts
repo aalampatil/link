@@ -24,6 +24,9 @@ export type LinkData = {
   createdAt: string;
   updatedAt: string;
   linkValidity: string | null;
+  holdingMessage: string;
+  expectedAt: string | null;
+  progress: number;
 };
 
 //#region 1

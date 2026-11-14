@@ -91,6 +91,9 @@ const publicLink = async (req: Request, res: Response) => {
     displayTitle: link.displayTitle,
     mappedUrl: link.mappedUrl ?? null,
     mappedOn: link.mappedOn,
+    holdingMessage: link.holdingMessage,
+    expectedAt: link.expectedAt,
+    progress: link.progress,
   });
 };
 

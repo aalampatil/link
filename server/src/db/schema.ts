@@ -4,6 +4,8 @@ import {
   varchar,
   timestamp,
   pgEnum,
+  text,
+  integer,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -13,6 +15,9 @@ export const linksTable = pgTable("links", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   displayTitle: varchar("display_title", { length: 255 }).default(""),
+  holdingMessage: text("holding_message").notNull().default(""),
+  expectedAt: timestamp("expected_at", { withTimezone: true }),
+  progress: integer("progress").notNull().default(0),
   mappedUrl: varchar("mapped_url", { length: 2048 }),
   mappedOn: timestamp("mapped_on", { withTimezone: true }),
   publicUrl: varchar("public_url", { length: 2048 }).notNull(),

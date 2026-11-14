@@ -53,10 +53,15 @@ export default function PublicUrl() {
           {isLoading
             ? "We’re checking the latest destination."
             : data
-              ? "The owner has created a place for their work. Once it’s connected, this link will take you straight there."
+              ? data.holdingMessage || "The owner has created a place for their work. Once it’s connected, this link will take you straight there."
               : error ||
               "It may have expired or been removed. Check the address with the person who shared it."}
         </p>
+        {data?.expectedAt && <p className="mt-4 text-sm">Expected {new Date(data.expectedAt).toLocaleString()}</p>}
+        {data && data.progress > 0 && <div className="mt-5 text-left">
+          <label htmlFor="public-progress" className="mb-2 block text-xs">Progress: {data.progress}%</label>
+          <progress id="public-progress" max={100} value={data.progress} className="h-2 w-full accent-main" />
+        </div>}
         {!isLoading && (
           <div className="mt-7">
             <Button variant="outline" onClick={() => slug && fetchLink(slug)}>

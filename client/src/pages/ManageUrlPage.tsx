@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -15,8 +15,10 @@ import { useManageLinkStore } from "@/store/LinkStore";
 import { copyLink } from "@/lib/clipboard";
 import { linkPublicUrl } from "@/lib/localUrls";
 import ExpiryPanel from "@/features/links/ExpiryPanel";
+import HoldingPanel from "@/features/links/HoldingPanel";
 
 export default function ManageUrlPage() {
+  const [tab, setTab] = useState("destination");
   const {
     data,
     fetchLink,
@@ -86,7 +88,13 @@ export default function ManageUrlPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid items-start gap-6 md:grid-cols-[1fr_260px]">
+        <>
+        <nav className="mb-6 flex flex-wrap gap-2" aria-label="Link settings sections">
+          {[{ id: "destination", label: "Destination" }, { id: "settings", label: "Project settings" }].map(item => <button key={item.id} type="button" aria-pressed={tab === item.id} onClick={() => setTab(item.id)} className={`rounded-lg border px-4 py-2 text-sm ${tab === item.id ? "bg-main text-main-foreground" : "bg-secondary-background"}`}>{item.label}</button>)}
+        </nav>
+        <div className="grid items-start gap-6 md:grid-cols-[1fr_280px]">
+          <div className="space-y-6">
+          {tab === "destination" &&
           <form onSubmit={handleMap} className="panel p-6 sm:p-8">
             <h2 className="text-lg font-medium">Destination</h2>
             <p className="mb-6 mt-2 text-sm leading-6 text-muted-foreground">
@@ -167,6 +175,9 @@ export default function ManageUrlPage() {
               </p>
             </div>
           </form>
+          }
+          {tab === "settings" && <HoldingPanel key={data.updatedAt} link={data} onUpdated={() => fetchLink(slug!)} />}
+          </div>
           <aside className="panel overflow-hidden">
             <div className="border-b border-border bg-muted px-5 py-4">
               <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
@@ -227,6 +238,7 @@ export default function ManageUrlPage() {
             <ExpiryPanel link={data} onUpdated={() => fetchLink(slug!)} />
           </aside>
         </div>
+        </>
       )}
     </main>
   );

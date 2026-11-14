@@ -31,3 +31,14 @@ test("renewal rejects invalid input and other owners", async () => {
   }
   assert.equal((await fetch(`${app.url}/${slug}/expiry`, { method: "POST", headers: ownerHeaders("another-owner"), body: JSON.stringify({ days: 7 }) })).status, 404);
 });
+
+test("holding settings are validated, owner-scoped, and visible publicly", async () => {
+  const body = { displayTitle: "Updated project", holdingMessage: "Preparing the demo", expectedAt: "2027-02-01T10:00:00+05:30", progress: 65 };
+  assert.equal((await fetch(`${app.url}/${slug}/holding`, { method: "PUT", headers: ownerHeaders("other"), body: JSON.stringify(body) })).status, 404);
+  assert.equal((await fetch(`${app.url}/${slug}/holding`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ ...body, progress: 101 }) })).status, 400);
+  assert.equal((await fetch(`${app.url}/${slug}/holding`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify(body) })).status, 200);
+  const result = await (await fetch(`${app.url}/public/${slug}`)).json();
+  assert.equal(result.holdingMessage, body.holdingMessage);
+  assert.equal(result.progress, 65);
+  assert.equal(result.ownerId, undefined);
+});
