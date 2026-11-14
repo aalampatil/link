@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { eq } from "drizzle-orm";
 import { db, ownerHeaders, testApp } from "./helpers.js";
 import { linksTable } from "../src/db/schema.js";
+import { enqueueReminders } from "../src/jobs/reminders.js";
+import { processMailJobs } from "../src/jobs/mail.js";
+import { mailJobs } from "../src/db/schema.js";
 let app: Awaited<ReturnType<typeof testApp>>;
 let slug: string;
 before(async () => {
@@ -74,4 +77,33 @@ test("activity records changes atomically and remains owner-only", async () => {
   assert.ok(result.events.some((event: { message: string }) => event.message === "Destination restored"));
   assert.ok(result.events.some((event: { message: string }) => event.message === "Link paused"));
   assert.equal((await fetch(`${app.url}/${slug}/activity`, { headers: ownerHeaders("other") })).status, 404);
+});
+
+test("deadline preferences are owner-scoped and accept local-time offsets", async () => {
+  const body = { deadlineAt: "2027-01-01T12:00:00+05:30", reminderHours: 24, remindersEnabled: false };
+  const result = await fetch(`${app.url}/${slug}/deadline`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify(body) });
+  assert.equal(result.status, 200);
+  assert.equal((await result.json()).deadlineAt, "2027-01-01T06:30:00.000Z");
+  assert.equal((await fetch(`${app.url}/${slug}/deadline`, { method: "PUT", headers: ownerHeaders("other"), body: JSON.stringify(body) })).status, 404);
+});
+
+test("reminders deduplicate, retry delivery failures, and cancel stale jobs", async () => {
+  const now = new Date();
+  await db.update(linksTable).set({ mappedUrl: null, deadlineAt: new Date(now.getTime() + 3600000), reminderHours: 24, remindersEnabled: true, reminderEmail: "owner@example.test", linkValidity: new Date(now.getTime() + 2 * 86400000) }).where(eq(linksTable.slug, slug));
+  const [link] = await db.select().from(linksTable).where(eq(linksTable.slug, slug));
+  await enqueueReminders(now); await enqueueReminders(now);
+  assert.equal((await db.select().from(mailJobs).where(eq(mailJobs.linkId, link!.id))).length, 2);
+  await processMailJobs(async () => { throw new Error("SMTP offline"); }, now);
+  const queued = await db.select().from(mailJobs).where(eq(mailJobs.linkId, link!.id));
+  assert.ok(queued.every(job => job.attempts === 1 && !job.sentAt));
+  const delivered: string[] = [];
+  await processMailJobs(async mail => { delivered.push(mail.subject); }, new Date(now.getTime() + 120000));
+  assert.equal(delivered.length, 2);
+  await enqueueReminders(now); await processMailJobs(async mail => { delivered.push(mail.subject); }, new Date(now.getTime() + 120000));
+  assert.equal(delivered.length, 2);
+  await db.update(linksTable).set({ deadlineAt: new Date(now.getTime() + 7200000) }).where(eq(linksTable.slug, slug));
+  await enqueueReminders(now);
+  await db.update(linksTable).set({ mappedUrl: "https://example.com/finished" }).where(eq(linksTable.slug, slug));
+  await processMailJobs(async mail => { delivered.push(mail.subject); }, new Date(now.getTime() + 120000));
+  assert.equal(delivered.length, 2);
 });

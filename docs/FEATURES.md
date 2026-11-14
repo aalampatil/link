@@ -29,12 +29,42 @@ Owners can pause a link from Project settings. Public responses withhold the
 destination while paused and show the holding page. Resuming restores access
 to the existing destination; it does not extend the expiration date.
 
-## Local integration tests
+## Destination history
 
 Destination history retains previous URLs and uploaded files, with the original
 publish time and replacement time. Restoring creates another history entry;
 it never destroys the current version. Versions are private to the owner.
 Deleting a link also deletes its retained Cloudinary files and database history.
+
+## Activity
+
+History & activity includes an owner-only timeline of holding-page edits,
+destination changes and restores, expiry extensions, and pause/resume actions.
+Each activity record is committed in the same transaction as its change.
+The original placeholder creation timestamp is shown separately for older links.
+
+## Deadlines, reminders, and background jobs
+
+Project settings separate a submission deadline from link expiry. Opt-in alerts
+go to the owner's verified primary Clerk email: a missing-destination reminder
+1 hour to 1 week before the deadline, and an expiry warning within 3 days.
+
+Set server-only `SMTP_URL` (an SMTP/SMTPS connection URL) and `MAIL_FROM` to enable
+delivery. Without these, deadline saving works and the UI explains that email
+delivery is unavailable. The API polls jobs every 60 seconds by default.
+`JOBS_INTERVAL_MS` changes that interval; `JOBS_ENABLED=false` disables polling
+on the API process. A separate always-on worker can run `npm run worker` after
+building, or `npm run worker:dev` locally, using the same database and env.
+
+Jobs persist in PostgreSQL, deduplicate by link and deadline/expiry instant,
+retry SMTP failures up to five times with backoff, and cancel when settings
+become stale. Workers lock jobs with `SKIP LOCKED` so multiple instances do not
+process the same row concurrently. SMTP delivery is at least once: a crash
+after SMTP accepts a message but before its database commit may cause a retry.
+SIGTERM/SIGINT stop polling, finish in-flight work, then close connections.
+Scheduling and background alerts require a running API job loop or worker.
+
+## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests
 refuse remote database hosts and never use the application's `DATABASE_URL`.

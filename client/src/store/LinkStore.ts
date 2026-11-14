@@ -28,6 +28,10 @@ export type LinkData = {
   expectedAt: string | null;
   progress: number;
   paused: boolean;
+  deadlineAt: string | null;
+  reminderHours: number;
+  remindersEnabled: boolean;
+  capabilities?: { email: boolean };
 };
 
 //#region 1

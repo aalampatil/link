@@ -23,6 +23,10 @@ export const linksTable = pgTable("links", {
   expectedAt: timestamp("expected_at", { withTimezone: true }),
   progress: integer("progress").notNull().default(0),
   paused: boolean("paused").notNull().default(false),
+  deadlineAt: timestamp("deadline_at", { withTimezone: true }),
+  reminderHours: integer("reminder_hours").notNull().default(24),
+  remindersEnabled: boolean("reminders_enabled").notNull().default(false),
+  reminderEmail: varchar("reminder_email", { length: 320 }),
   mappedUrl: varchar("mapped_url", { length: 2048 }),
   mappedOn: timestamp("mapped_on", { withTimezone: true }),
   publicUrl: varchar("public_url", { length: 2048 }).notNull(),
@@ -64,3 +68,19 @@ export const linkActivity = pgTable("link_activity", {
   message: varchar("message", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, table => [index("link_activity_link_idx").on(table.linkId, table.createdAt)]);
+
+export const mailJobs = pgTable("mail_jobs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  linkId: uuid("link_id").notNull().references(() => linksTable.id, { onDelete: "cascade" }),
+  dedupeKey: varchar("dedupe_key", { length: 512 }).notNull().unique(),
+  kind: varchar("kind", { length: 20 }).notNull(),
+  reference: text("reference").notNull(),
+  recipient: varchar("recipient", { length: 320 }).notNull(),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  dueAt: timestamp("due_at", { withTimezone: true }).defaultNow().notNull(),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  cancelled: boolean("cancelled").notNull().default(false),
+  attempts: integer("attempts").notNull().default(0),
+  lastError: varchar("last_error", { length: 255 }),
+}, table => [index("mail_jobs_due_idx").on(table.dueAt)]);

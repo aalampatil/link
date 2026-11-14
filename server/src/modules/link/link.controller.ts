@@ -18,6 +18,7 @@ import { ownedLink } from "./link.repository.js";
 import { publicView } from "./link.public.js";
 import { snapshot } from "./link.destination.js";
 import { recordActivity } from "./link.activity.js";
+import { mailConfigured } from "../../jobs/mail.js";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
@@ -101,7 +102,7 @@ const manageLink = async (req: Request, res: Response) => {
   if (typeof slug !== "string") throw ApiError.badRequest();
 
   const link = await ownedLink(slug, userId);
-  res.set("Cache-Control", "no-store").json(link);
+  res.set("Cache-Control", "no-store").json({ ...link, capabilities: { email: mailConfigured() } });
 };
 
 export const extendExpiry = async (req: Request, res: Response) => {
