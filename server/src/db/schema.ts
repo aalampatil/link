@@ -6,6 +6,7 @@ import {
   pgEnum,
   text,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -18,6 +19,7 @@ export const linksTable = pgTable("links", {
   holdingMessage: text("holding_message").notNull().default(""),
   expectedAt: timestamp("expected_at", { withTimezone: true }),
   progress: integer("progress").notNull().default(0),
+  paused: boolean("paused").notNull().default(false),
   mappedUrl: varchar("mapped_url", { length: 2048 }),
   mappedOn: timestamp("mapped_on", { withTimezone: true }),
   publicUrl: varchar("public_url", { length: 2048 }).notNull(),

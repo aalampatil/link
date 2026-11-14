@@ -15,6 +15,7 @@ import { env } from "../../env.js";
 import { z } from "zod";
 import { assertActive as assertLinkIsActive, extendedValidity } from "./link.policy.js";
 import { ownedLink } from "./link.repository.js";
+import { publicView } from "./link.public.js";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
@@ -85,16 +86,7 @@ const publicLink = async (req: Request, res: Response) => {
   assertLinkIsActive(link.linkValidity);
 
   res.set("Cache-Control", "no-store");
-  res.json({
-    slug: link.slug,
-    status: link.status, // ✅ from computed column
-    displayTitle: link.displayTitle,
-    mappedUrl: link.mappedUrl ?? null,
-    mappedOn: link.mappedOn,
-    holdingMessage: link.holdingMessage,
-    expectedAt: link.expectedAt,
-    progress: link.progress,
-  });
+  res.json(publicView(link));
 };
 
 // MANAGE LINK (requires auth + ownership)

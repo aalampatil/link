@@ -186,7 +186,7 @@ export default function GetAllLinks() {
                   ) : (
                     <span className="size-1.5 rounded-full bg-foreground" />
                   )}
-                  {link.mappedUrl ? "Connected" : "In progress"}
+                  {link.linkValidity && new Date(link.linkValidity).getTime() <= Date.now() ? "Expired" : link.paused ? "Paused" : link.mappedUrl ? "Connected" : "In progress"}
                 </span>
               </div>
               <div className="my-5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

@@ -39,7 +39,7 @@ export default function PublicUrl() {
           {isLoading
             ? "Just a moment"
             : data
-              ? "Work in progress"
+              ? data.status === "paused" ? "Temporarily paused" : "Work in progress"
               : "Link unavailable"}
         </p>
         <h1 className="text-3xl font-medium leading-tight">

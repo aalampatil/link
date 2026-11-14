@@ -10,7 +10,7 @@ import {
 } from "./link.controller.js";
 import { requireAuth } from "@clerk/express";
 import { upload } from "../../middlewares/upload.middleware.js";
-import { updateHoldingPage } from "./link.settings.js";
+import { updateHoldingPage, setPaused } from "./link.settings.js";
 const linkRouter = Router();
 
 linkRouter.post("/create", requireAuth(), createLink);
@@ -21,4 +21,5 @@ linkRouter.get("/get-all", requireAuth(), getAllLinks);
 linkRouter.delete("/delete/:slug", requireAuth(), deleteLink);
 linkRouter.post("/:slug/expiry", requireAuth(), extendExpiry);
 linkRouter.put("/:slug/holding", requireAuth(), updateHoldingPage);
+linkRouter.put("/:slug/pause", requireAuth(), setPaused);
 export default linkRouter;

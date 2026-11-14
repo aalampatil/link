@@ -42,3 +42,16 @@ test("holding settings are validated, owner-scoped, and visible publicly", async
   assert.equal(result.progress, 65);
   assert.equal(result.ownerId, undefined);
 });
+
+test("pause hides the destination and resume restores it without changing the public URL", async () => {
+  const target = "https://example.com/finished";
+  await fetch(`${app.url}/${slug}/map`, { method: "POST", headers: ownerHeaders(), body: JSON.stringify({ contentType: "Post", targetUrl: target }) });
+  assert.equal((await (await fetch(`${app.url}/public/${slug}`)).json()).mappedUrl, target);
+  assert.equal((await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders("other"), body: JSON.stringify({ paused: true }) })).status, 404);
+  await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ paused: true }) });
+  const paused = await (await fetch(`${app.url}/public/${slug}`)).json();
+  assert.equal(paused.status, "paused");
+  assert.equal(paused.mappedUrl, null);
+  await fetch(`${app.url}/${slug}/pause`, { method: "PUT", headers: ownerHeaders(), body: JSON.stringify({ paused: false }) });
+  assert.equal((await (await fetch(`${app.url}/public/${slug}`)).json()).mappedUrl, target);
+});

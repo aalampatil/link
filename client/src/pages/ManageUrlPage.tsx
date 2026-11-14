@@ -16,6 +16,7 @@ import { copyLink } from "@/lib/clipboard";
 import { linkPublicUrl } from "@/lib/localUrls";
 import ExpiryPanel from "@/features/links/ExpiryPanel";
 import HoldingPanel from "@/features/links/HoldingPanel";
+import PausePanel from "@/features/links/PausePanel";
 
 export default function ManageUrlPage() {
   const [tab, setTab] = useState("destination");
@@ -177,6 +178,7 @@ export default function ManageUrlPage() {
           </form>
           }
           {tab === "settings" && <HoldingPanel key={data.updatedAt} link={data} onUpdated={() => fetchLink(slug!)} />}
+          {tab === "settings" && <PausePanel link={data} onUpdated={() => fetchLink(slug!)} />}
           </div>
           <aside className="panel overflow-hidden">
             <div className="border-b border-border bg-muted px-5 py-4">

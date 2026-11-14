@@ -23,6 +23,12 @@ and progress percentage. Visitors see these while no destination is available.
 Dates are entered in the owner's local time and stored as UTC instants.
 Only the owner can edit settings; public responses never expose ownership data.
 
+## Pause and resume
+
+Owners can pause a link from Project settings. Public responses withhold the
+destination while paused and show the holding page. Resuming restores access
+to the existing destination; it does not extend the expiration date.
+
 ## Local integration tests
 
 Use a separate local PostgreSQL database whose name ends in `_test`. Tests

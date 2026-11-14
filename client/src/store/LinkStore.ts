@@ -19,7 +19,7 @@ export type LinkData = {
   manageUrl: string;
   mappedOn: string | null;
   mappedUrl: string | null;
-  status: "pending" | "ready";
+  status: "pending" | "ready" | "paused";
   contentType: string | null;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +27,7 @@ export type LinkData = {
   holdingMessage: string;
   expectedAt: string | null;
   progress: number;
+  paused: boolean;
 };
 
 //#region 1
