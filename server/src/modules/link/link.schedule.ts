@@ -10,10 +10,19 @@ import { recordActivity } from "./link.activity.js";
 export async function cancelSchedule(req: Request, res: Response) {
   const { userId } = getAuth(req);
   if (!userId) throw ApiError.unauthorised();
-  const result = await db.transaction(async tx => {
+  const result = await db.transaction(async (tx) => {
     const link = await ownedLink(String(req.params.slug), userId, tx, true);
-    const [updated] = await tx.update(linksTable).set({ scheduledAt: null, scheduledDestination: null, updatedAt: new Date() }).where(eq(linksTable.id, link.id)).returning();
-    if (link.scheduledAt) await recordActivity(tx, link.id, "Scheduled publication cancelled");
+    const [updated] = await tx
+      .update(linksTable)
+      .set({
+        scheduledAt: null,
+        scheduledDestination: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(linksTable.id, link.id))
+      .returning();
+    if (link.scheduledAt)
+      await recordActivity(tx, link.id, "Scheduled publication cancelled");
     return updated;
   });
   res.json(result);

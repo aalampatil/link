@@ -3,11 +3,18 @@ import { nanoid } from "nanoid";
 import { db } from "../../db/index.js";
 import ApiError from "../../utils/api-error.js";
 import { getAuth } from "@clerk/express";
-import { linksTable, destinationVersions, linkAssets } from "../../db/schema.js";
+import {
+  linksTable,
+  destinationVersions,
+  linkAssets,
+} from "../../db/schema.js";
 import { desc, eq } from "drizzle-orm";
 import { env } from "../../env.js";
 import { z } from "zod";
-import { assertActive as assertLinkIsActive, extendedValidity } from "./link.policy.js";
+import {
+  assertActive as assertLinkIsActive,
+  extendedValidity,
+} from "./link.policy.js";
 import { ownedLink } from "./link.repository.js";
 import { publicView } from "./link.public.js";
 import { snapshot } from "./link.destination.js";
@@ -34,7 +41,12 @@ const createLink = async (req: Request, res: Response, next: NextFunction) => {
     const { userId } = getAuth(req);
     if (!userId) throw ApiError.unauthorised();
 
-    const { displayTitle = "" } = parseBody(z.object({ displayTitle: z.string().trim().max(120).optional() }).strict(), req.body ?? {});
+    const { displayTitle = "" } = parseBody(
+      z
+        .object({ displayTitle: z.string().trim().max(120).optional() })
+        .strict(),
+      req.body ?? {},
+    );
     const cleanTitle = displayTitle;
     const slug = createSlug(cleanTitle);
 
@@ -93,20 +105,34 @@ const manageLink = async (req: Request, res: Response) => {
   if (typeof slug !== "string") throw ApiError.badRequest();
 
   const link = await ownedLink(slug, userId);
-  res.set("Cache-Control", "no-store").json({ ...link, capabilities: { email: mailConfigured() } });
+  res
+    .set("Cache-Control", "no-store")
+    .json({ ...link, capabilities: { email: mailConfigured() } });
 };
 
 export const extendExpiry = async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   if (!userId) throw ApiError.unauthorised();
-  const input = z.object({ days: z.number().int().min(1).max(365) }).safeParse(req.body);
-  if (!input.success) throw ApiError.badRequest("Choose an extension between 1 and 365 days");
+  const input = z
+    .object({ days: z.number().int().min(1).max(365) })
+    .safeParse(req.body);
+  if (!input.success)
+    throw ApiError.badRequest("Choose an extension between 1 and 365 days");
   const link = await db.transaction(async (tx) => {
     const current = await ownedLink(String(req.params.slug), userId, tx, true);
-    const [updated] = await tx.update(linksTable).set({
-      linkValidity: extendedValidity(current.linkValidity, input.data.days), updatedAt: new Date(),
-    }).where(eq(linksTable.id, current.id)).returning();
-    await recordActivity(tx, current.id, `Validity extended by ${input.data.days} days`);
+    const [updated] = await tx
+      .update(linksTable)
+      .set({
+        linkValidity: extendedValidity(current.linkValidity, input.data.days),
+        updatedAt: new Date(),
+      })
+      .where(eq(linksTable.id, current.id))
+      .returning();
+    await recordActivity(
+      tx,
+      current.id,
+      `Validity extended by ${input.data.days} days`,
+    );
     return updated;
   });
   res.json(link);
@@ -135,15 +161,34 @@ const deleteLink = async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   if (!userId) throw ApiError.unauthorised();
 
-  await db.transaction(async tx => {
-  const link = await ownedLink(String(req.params.slug), userId, tx, true);
-  const versions = await tx.select().from(destinationVersions).where(eq(destinationVersions.linkId, link.id));
-  const assets = new Map([snapshot(link), ...versions.map(v => v.destination)].filter(v => v?.filePublicId).map(v => [v!.filePublicId!, v!]));
-  for (const asset of assets.values()) await deleteFromCloudinary(asset.filePublicId!, asset.fileResourceType ?? "image");
-  const retained = await tx.select().from(linkAssets).where(eq(linkAssets.linkId, link.id));
-  for (const asset of retained) if (!assets.has(asset.publicId)) await deleteFromCloudinary(asset.publicId, asset.resourceType as "image" | "video" | "raw");
+  await db.transaction(async (tx) => {
+    const link = await ownedLink(String(req.params.slug), userId, tx, true);
+    const versions = await tx
+      .select()
+      .from(destinationVersions)
+      .where(eq(destinationVersions.linkId, link.id));
+    const assets = new Map(
+      [snapshot(link), ...versions.map((v) => v.destination)]
+        .filter((v) => v?.filePublicId)
+        .map((v) => [v!.filePublicId!, v!]),
+    );
+    for (const asset of assets.values())
+      await deleteFromCloudinary(
+        asset.filePublicId!,
+        asset.fileResourceType ?? "image",
+      );
+    const retained = await tx
+      .select()
+      .from(linkAssets)
+      .where(eq(linkAssets.linkId, link.id));
+    for (const asset of retained)
+      if (!assets.has(asset.publicId))
+        await deleteFromCloudinary(
+          asset.publicId,
+          asset.resourceType as "image" | "video" | "raw",
+        );
 
-  await tx.delete(linksTable).where(eq(linksTable.id, link.id));
+    await tx.delete(linksTable).where(eq(linksTable.id, link.id));
   });
 
   return res.status(200).json({ message: "Link deleted" });
