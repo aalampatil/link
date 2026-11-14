@@ -72,7 +72,10 @@ npm --prefix server run build
 git diff --check
 ```
 
-There is currently no automated test suite. The frontend uses the checked-in
+Backend integration and HTTP-probe tests run with `npm --prefix server test`
+against an isolated local PostgreSQL test database. Browser flows run with
+`npm --prefix client run test:browser`. See [the feature and verification guide](docs/FEATURES.md#local-integration-tests)
+for database/browser setup, coverage, and limits. The frontend uses the checked-in
 `client/eslint.config.js` configuration for linting. Do not report tests, lint,
 or builds as passing unless you actually ran them successfully.
 

@@ -112,6 +112,11 @@ bundles `dist/index.html` and routes public links through `api/share.ts`.
 Other SPA routes and static assets keep their normal behavior. Metadata falls
 back to the app page if the API is unavailable; social platforms may cache cards.
 
+The thumbnail field accepts an existing HTTPS image URL. Files use unlisted
+Cloudinary URLs; these features do not add password protection or private file
+storage. Pausing hides destinations from Link's public responses, while someone
+who already saved a destination/file URL can still open that URL directly.
+
 ## Destination health
 
 Insights supports manual checks (at most once per minute) and opt-in daily
@@ -137,6 +142,36 @@ The default test URL uses port 55434 and database/user/password `link_test`.
 docker run --detach --name link-lifecycle-test --publish 127.0.0.1:55434:5432 --env POSTGRES_USER=link_test --env POSTGRES_PASSWORD=link_test --env POSTGRES_DB=link_test postgres:17
 npm --prefix server test
 ```
+
+If that container already exists, use `docker start link-lifecycle-test` instead
+of creating it again. Migrations `0009` through `0021` are additive except the
+documented UTC timestamp conversion in `0009`. They run against the local test
+database during tests. Apply them to the app database before deploying this code.
+
+The dashboard currently displays the latest 100 links. Its filters distinguish
+connected, pending, paused, and expired links. All owner endpoints require a
+Clerk session and return JSON 401 when signed out. Configure `TRUST_PROXY_HOPS`
+to match the number of trusted reverse proxies in the production deployment;
+the default is 0 for direct/local access.
+
+Browser checks run the real components and APIs against the test database with
+synthetic authentication confined to the test harness. They do not test live
+Clerk sign-in, production SMTP credentials, or the deployed Vercel function.
+SMTP delivery is checked against a local test inbox; Cloudinary upload/history
+and deletion are checked using mocked Cloudinary responses. A real public HTTP
+probe was verified separately. Test harnesses are excluded from production builds.
+
+```powershell
+# Install a browser once, or set PLAYWRIGHT_CHANNEL=chrome to use installed Chrome.
+cd client
+npx playwright install chromium
+npm run test:browser
+```
+
+Browser screenshots and traces are written to ignored `client/test-results/`.
+The test stack closes its API, database connections, and local SMTP inbox after
+the run. The PostgreSQL test container can be stopped with
+`docker stop link-lifecycle-test` and restarted before the next run.
 
 Set `TEST_DATABASE_URL` to override the local test connection. Tests apply all
 checked-in migrations and delete their own fixtures. The synthetic identity
