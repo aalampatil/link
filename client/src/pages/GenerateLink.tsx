@@ -69,8 +69,8 @@ export default function GenerateLink() {
         </div>
       </form>
       <p className="mt-4 text-xs leading-5 text-muted-foreground">
-        Links are valid for 30 days from creation. You can connect a website or
-        a supported file.
+        Links start with 30 days of validity and can be extended in settings.
+        Connect a website, a supported file, or a bundle of project resources.
       </p>
       {data && (
         <section aria-live="polite" className="panel mt-8 overflow-hidden">

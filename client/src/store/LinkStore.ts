@@ -46,11 +46,34 @@ export type LinkData = {
   healthCheckedAt: string | null;
   healthResults: { url: string; status: string; statusCode: number | null }[];
 };
+type CreatedLink = Pick<
+  LinkData,
+  "slug" | "displayTitle" | "publicUrl" | "manageUrl"
+>;
+type PublicLink = Pick<
+  LinkData,
+  | "slug"
+  | "displayTitle"
+  | "status"
+  | "mappedUrl"
+  | "mappedOn"
+  | "holdingMessage"
+  | "expectedAt"
+  | "progress"
+  | "bundleItems"
+  | "createdAt"
+  | "updatedAt"
+  | "notificationsAvailable"
+>;
+let manageController: AbortController | undefined;
+let publicController: AbortController | undefined;
+export const cancelManageRequest = () => manageController?.abort();
+export const cancelPublicRequest = () => publicController?.abort();
 
 //#region 1
 type GenerateLinkStore = {
   displayTitle: string;
-  data: LinkData | null;
+  data: CreatedLink | null;
   loading: boolean;
   setDisplayTitle: (title: string) => void;
   createLink: () => Promise<boolean>;
@@ -169,6 +192,8 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
   },
 
   fetchLink: async (slug) => {
+    manageController?.abort();
+    const controller = (manageController = new AbortController());
     try {
       set({
         fetching: true,
@@ -178,19 +203,26 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
         contentType: "Post",
         scheduledAt: "",
       });
-      const res = await axiosApi.get(`/link/manage/${slug}`);
+      const res = await axiosApi.get<LinkData>(`/link/manage/${slug}`, {
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
       set({
         data: res.data,
         bundleItems: res.data.bundleItems ?? [],
+        contentType: res.data.bundleItems?.length
+          ? "Bundle"
+          : (res.data.contentType ?? "Post"),
       });
     } catch (err) {
+      if (controller.signal.aborted) return;
       const message =
         err instanceof Error && "response" in err
           ? (err as AxiosErrorResponse).response?.data?.message
           : "An error occurred while fetching link";
       toast.error(message);
     } finally {
-      set({ fetching: false });
+      if (!controller.signal.aborted) set({ fetching: false });
     }
   },
 
@@ -205,8 +237,13 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
       formdata.append("contentType", contentType);
       if (targetUrl) formdata.append("targetUrl", targetUrl);
       if (file) formdata.append("file", file);
-      if (get().scheduledAt) formdata.append("scheduledAt", new Date(get().scheduledAt).toISOString());
-      if (contentType === "Bundle") formdata.append("bundleItems", JSON.stringify(get().bundleItems));
+      if (get().scheduledAt)
+        formdata.append(
+          "scheduledAt",
+          new Date(get().scheduledAt).toISOString(),
+        );
+      if (contentType === "Bundle")
+        formdata.append("bundleItems", JSON.stringify(get().bundleItems));
 
       const res = await axiosApi.post(`/link/${slug}/map`, formdata, {
         headers: {
@@ -239,7 +276,7 @@ export const useManageLinkStore = create<ManageLinkStore>((set, get) => ({
 //#region 4
 
 type PublicLinkStore = {
-  data: LinkData | null;
+  data: PublicLink | null;
   error: string | null;
   isLoading: boolean;
   fetchLink: (slug: string) => Promise<void>;
@@ -250,10 +287,15 @@ export const usePublicLinkStore = create<PublicLinkStore>((set) => ({
   error: null,
   isLoading: true,
   fetchLink: async (slug) => {
+    publicController?.abort();
+    const controller = (publicController = new AbortController());
     try {
       set({ isLoading: true, data: null, error: null });
-      const res = await publicAxiosApi.get(`/link/public/${slug}`);
+      const res = await publicAxiosApi.get<PublicLink>(`/link/public/${slug}`, {
+        signal: controller.signal,
+      });
       await trackVisit(slug);
+      if (controller.signal.aborted) return;
       const link = res.data.mappedUrl;
       if (link && !res.data.bundleItems?.length) {
         window.location.replace(link);
@@ -263,6 +305,7 @@ export const usePublicLinkStore = create<PublicLinkStore>((set) => ({
         data: res.data,
       });
     } catch (err) {
+      if (controller.signal.aborted) return;
       const message =
         err instanceof Error && "response" in err
           ? (err as AxiosErrorResponse).response?.data?.message
@@ -272,7 +315,7 @@ export const usePublicLinkStore = create<PublicLinkStore>((set) => ({
         error: message || "We couldn’t open this link. Please try again.",
       });
     } finally {
-      set({ isLoading: false });
+      if (!controller.signal.aborted) set({ isLoading: false });
     }
   },
 }));

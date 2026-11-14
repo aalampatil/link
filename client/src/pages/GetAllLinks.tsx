@@ -17,7 +17,11 @@ import { useFetchLinksStore } from "@/store/LinkStore";
 import axiosApi from "@/config/axiosApi";
 import { linkPublicUrl } from "@/lib/localUrls";
 import { copyLink } from "@/lib/clipboard";
-import { expiryLabel } from "@/features/links/presentation";
+import {
+  expiryLabel,
+  linkState,
+  stateLabels,
+} from "@/features/links/presentation";
 
 const formatDate = (iso: string | null) =>
   iso
@@ -51,8 +55,7 @@ export default function GetAllLinks() {
       `${link.displayTitle} ${link.slug}`
         .toLowerCase()
         .includes(query.toLowerCase()) &&
-      (filter === "all" ||
-        (filter === "ready" ? !!link.mappedUrl : !link.mappedUrl)),
+      (filter === "all" || linkState(link) === filter),
   );
   const handleDelete = async (slug: string) => {
     if (
@@ -93,11 +96,11 @@ export default function GetAllLinks() {
           { label: "Total links", value: links.length },
           {
             label: "Connected",
-            value: links.filter((l) => l.mappedUrl).length,
+            value: links.filter((l) => linkState(l) === "ready").length,
           },
           {
             label: "In progress",
-            value: links.filter((l) => !l.mappedUrl).length,
+            value: links.filter((l) => linkState(l) === "pending").length,
           },
         ].map((stat) => (
           <div key={stat.label} className="px-4 first:pl-0 sm:px-8">
@@ -109,11 +112,17 @@ export default function GetAllLinks() {
         ))}
       </div>
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row">
-        <div className="flex gap-1" role="group" aria-label="Filter links">
+        <div
+          className="flex flex-wrap gap-1"
+          role="group"
+          aria-label="Filter links"
+        >
           {[
             { value: "all", label: "All links" },
             { value: "ready", label: "Connected" },
             { value: "pending", label: "In progress" },
+            { value: "paused", label: "Paused" },
+            { value: "expired", label: "Expired" },
           ].map((tab) => (
             <button
               key={tab.value}
@@ -174,7 +183,8 @@ export default function GetAllLinks() {
                     </h2>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Created {formatDate(link.createdAt)}
-                      {" · "}{expiryLabel(link.linkValidity)}
+                      {" · "}
+                      {expiryLabel(link.linkValidity)}
                     </p>
                   </div>
                 </div>
@@ -186,7 +196,7 @@ export default function GetAllLinks() {
                   ) : (
                     <span className="size-1.5 rounded-full bg-foreground" />
                   )}
-                  {link.linkValidity && new Date(link.linkValidity).getTime() <= Date.now() ? "Expired" : link.paused ? "Paused" : link.mappedUrl ? "Connected" : "In progress"}
+                  {stateLabels[linkState(link)]}
                 </span>
               </div>
               <div className="my-5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -274,7 +284,8 @@ export default function GetAllLinks() {
         </div>
       )}
       <p className="mt-6 text-xs text-muted-foreground">
-        Links start with 30 days of validity. Extend or renew them from link settings.
+        Links start with 30 days of validity. Extend or renew them from link
+        settings.
       </p>
     </main>
   );

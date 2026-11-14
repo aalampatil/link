@@ -25,9 +25,12 @@ import AnalyticsPanel from "@/features/links/AnalyticsPanel";
 import BundleEditor from "@/features/links/BundleEditor";
 import SharingPanel from "@/features/links/SharingPanel";
 import HealthPanel from "@/features/links/HealthPanel";
+import { linkState, stateLabels } from "@/features/links/presentation";
+import { cancelManageRequest } from "@/store/LinkStore";
 
 export default function ManageUrlPage() {
   const [tab, setTab] = useState("destination");
+  const [bundleUploading, setBundleUploading] = useState(false);
   const {
     data,
     fetchLink,
@@ -40,20 +43,30 @@ export default function ManageUrlPage() {
     setFile,
     contentType,
     setContentType,
-    scheduledAt, setScheduledAt,
-    bundleItems, setBundleItems,
+    scheduledAt,
+    setScheduledAt,
+    bundleItems,
+    setBundleItems,
   } = useManageLinkStore();
   const { slug } = useParams();
   useEffect(() => {
     if (slug) void fetchLink(slug);
+    return cancelManageRequest;
   }, [slug, fetchLink]);
   const handleMap = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
-    if (!slug || loading) return;
-    if (contentType === "Bundle" && !bundleItems.length) { toast.error("Add at least one bundle resource"); return; }
+    if (!slug || loading || bundleUploading) return;
+    if (contentType === "Bundle" && !bundleItems.length) {
+      toast.error("Add at least one bundle resource");
+      return;
+    }
     if (contentType === "File" && !file) {
       toast.error("Please choose a file");
+      return;
+    }
+    if (file && file.size > 50 * 1024 * 1024) {
+      toast.error("Files must be 50 MB or smaller");
       return;
     }
     if (contentType === "Post" && !targetUrl.trim()) {
@@ -62,7 +75,9 @@ export default function ManageUrlPage() {
     }
     if (await mapUrl(slug)) {
       form.reset();
-      toast.success(scheduledAt ? "Destination scheduled" : "Destination updated");
+      toast.success(
+        scheduledAt ? "Destination scheduled" : "Destination updated",
+      );
     }
   };
   const chooseType = (type: string) => {
@@ -72,7 +87,7 @@ export default function ManageUrlPage() {
   };
   const publicUrl = slug ? linkPublicUrl(slug) : "";
   return (
-    <main className="workspace max-w-4xl">
+    <main className="workspace max-w-6xl">
       <Link to="/get-all" className="quiet-link inline-flex items-center gap-2">
         <ArrowLeft size={14} /> My links
       </Link>
@@ -101,170 +116,267 @@ export default function ManageUrlPage() {
         </div>
       ) : (
         <>
-        <nav className="mb-6 flex flex-wrap gap-2" aria-label="Link settings sections">
-          {[{ id: "destination", label: "Destination" }, { id: "settings", label: "Project settings" }].map(item => <button key={item.id} type="button" aria-pressed={tab === item.id} onClick={() => setTab(item.id)} className={`rounded-lg border px-4 py-2 text-sm ${tab === item.id ? "bg-main text-main-foreground" : "bg-secondary-background"}`}>{item.label}</button>)}
-        </nav>
-        <Button type="button" variant="outline" className="mb-6 mr-2" aria-pressed={tab === "insights"} onClick={() => setTab("insights")}>Insights</Button>
-        <Button type="button" variant="outline" className="mb-6" aria-pressed={tab === "history"} onClick={() => setTab("history")}>History & activity</Button>
-        <div className="grid items-start gap-6 md:grid-cols-[1fr_280px]">
-          <div className="space-y-6">
-          {tab === "destination" &&
-          <form onSubmit={handleMap} className="panel p-6 sm:p-8">
-            <h2 className="text-lg font-medium">Destination</h2>
-            <p className="mb-6 mt-2 text-sm leading-6 text-muted-foreground">
-              Choose where visitors go when they open your public link.
-            </p>
-            <div
-              className="mb-6 grid gap-3 sm:grid-cols-3"
-              role="group"
-              aria-label="Destination type"
-            >
-              {[
-                { type: "Post", label: "Website URL", icon: Globe },
-                { type: "File", label: "Upload a file", icon: FileUp },
-                { type: "Bundle", label: "Resource bundle", icon: Link2 },
-              ].map(({ type, label, icon: Icon }) => (
-                <button
-                  type="button"
-                  key={type}
-                  onClick={() => chooseType(type)}
-                  aria-pressed={contentType === type}
-                  disabled={loading}
-                  className={`flex items-center gap-2 rounded-lg border p-4 text-sm transition-colors disabled:opacity-50 ${contentType === type ? "border-main bg-main text-main-foreground font-medium" : "border-border text-muted-foreground hover:border-main"}`}
-                >
-                  <Icon size={16} />
-                  {label}
-                </button>
-              ))}
-            </div>
-            {contentType === "Bundle" ? <BundleEditor slug={data.slug} items={bundleItems} onChange={setBundleItems} disabled={loading} /> : contentType === "Post" ? (
-              <div>
-                <label htmlFor="destination-url" className="field-label">
-                  Destination URL
-                </label>
-                <input
-                  id="destination-url"
-                  type="url"
-                  required
-                  placeholder="https://example.com/your-work"
-                  value={targetUrl}
-                  onChange={(e) => setTargetUrl(e.target.value)}
-                  disabled={loading}
-                  className="field"
-                />
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Use a full web address, including https://.
-                </p>
-              </div>
-            ) : (
-              <div>
-                <label htmlFor="destination-file" className="field-label">
-                  Choose your file
-                </label>
-                <input
-                  id="destination-file"
-                  type="file"
-                  required
-                  disabled={loading}
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                  className="field text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:font-medium"
-                />
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Upload your finished document, image, or supported media file.
-                </p>
-              </div>
-            )}
-            <div className="mt-7 border-t border-border pt-6">
-              <label htmlFor="publish-at" className="field-label">Publish at (optional, your local time)</label>
-              <input id="publish-at" className="field mb-3" type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} disabled={loading} />
-              <p className="mb-4 text-xs">Leave empty to publish now. Scheduled work remains private until publication.</p>
-              <Button type="submit" disabled={loading}>
-                {loading
-                  ? "Saving destination…"
-                  : scheduledAt ? "Schedule publication"
-                  : data.mappedUrl
-                    ? "Update destination"
-                    : "Connect destination"}
-                <ArrowUpRight size={15} />
-              </Button>
-              <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                {data.mappedUrl
-                  ? "This replaces the current destination for everyone with the link."
-                  : "Your holding page will redirect visitors once connected."}
-              </p>
-            </div>
-          </form>
-          }
-          {tab === "destination" && <SchedulePanel link={data} onUpdated={() => fetchLink(slug!)} />}
-          {tab === "settings" && <HoldingPanel key={data.updatedAt} link={data} onUpdated={() => fetchLink(slug!)} />}
-          {tab === "settings" && <PausePanel link={data} onUpdated={() => fetchLink(slug!)} />}
-          {tab === "settings" && <DeadlinePanel link={data} onUpdated={() => fetchLink(slug!)} />}
-          {tab === "settings" && <SharingPanel link={data} onUpdated={() => fetchLink(slug!)} />}
-          {tab === "history" && <HistoryPanel key={data.updatedAt} slug={data.slug} onUpdated={() => fetchLink(slug!)} />}
-          {tab === "history" && <ActivityPanel key={`activity-${data.updatedAt}`} slug={data.slug} />}
-          {tab === "insights" && <AnalyticsPanel slug={data.slug} />}
-          {tab === "insights" && <HealthPanel key={data.healthCheckedAt ?? data.updatedAt} link={data} onUpdated={() => fetchLink(slug!)} />}
-          </div>
-          <aside className="panel overflow-hidden">
-            <div className="border-b border-border bg-muted px-5 py-4">
-              <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <Link2 size={13} /> Link overview
-              </div>
-              <h2 className="break-words text-base font-medium">
-                {data.displayTitle || "Untitled project"}
-              </h2>
-              <span
-                className={`mt-3 ${data.mappedUrl ? "status-ready" : "status-pending"}`}
+          <nav
+            className="mb-6 flex flex-wrap gap-2"
+            aria-label="Link settings sections"
+          >
+            {[
+              { id: "destination", label: "Destination" },
+              { id: "settings", label: "Project settings" },
+              { id: "history", label: "History & activity" },
+              { id: "insights", label: "Insights" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={tab === item.id}
+                onClick={() => setTab(item.id)}
+                className={`rounded-lg border px-4 py-2 text-sm ${tab === item.id ? "bg-main text-main-foreground" : "bg-secondary-background"}`}
               >
-                {data.mappedUrl ? (
-                  <Check size={11} />
-                ) : (
-                  <span className="size-1.5 rounded-full bg-foreground" />
-                )}
-                {data.mappedUrl ? "Connected" : "In progress"}
-              </span>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <div className="grid items-start gap-6 md:grid-cols-[1fr_280px]">
+            <div className="space-y-6">
+              {tab === "destination" && (
+                <form onSubmit={handleMap} className="panel p-6 sm:p-8">
+                  {linkState(data) === "expired" && (
+                    <p role="alert" className="mb-5 text-sm">
+                      This link has expired. Extend it using Link expiry to
+                      publish a destination.
+                    </p>
+                  )}
+                  <fieldset
+                    disabled={
+                      loading ||
+                      bundleUploading ||
+                      linkState(data) === "expired"
+                    }
+                  >
+                    <h2 className="text-lg font-medium">Destination</h2>
+                    <p className="mb-6 mt-2 text-sm leading-6 text-muted-foreground">
+                      Choose where visitors go when they open your public link.
+                    </p>
+                    <div
+                      className="mb-6 grid gap-3 sm:grid-cols-3"
+                      role="group"
+                      aria-label="Destination type"
+                    >
+                      {[
+                        { type: "Post", label: "Website URL", icon: Globe },
+                        { type: "File", label: "Upload a file", icon: FileUp },
+                        {
+                          type: "Bundle",
+                          label: "Resource bundle",
+                          icon: Link2,
+                        },
+                      ].map(({ type, label, icon: Icon }) => (
+                        <button
+                          type="button"
+                          key={type}
+                          onClick={() => chooseType(type)}
+                          aria-pressed={contentType === type}
+                          disabled={loading}
+                          className={`flex items-center gap-2 rounded-lg border p-4 text-sm transition-colors disabled:opacity-50 ${contentType === type ? "border-main bg-main text-main-foreground font-medium" : "border-border text-muted-foreground hover:border-main"}`}
+                        >
+                          <Icon size={16} />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    {contentType === "Bundle" ? (
+                      <BundleEditor
+                        slug={data.slug}
+                        items={bundleItems}
+                        onChange={setBundleItems}
+                        disabled={loading}
+                        onUploadingChange={setBundleUploading}
+                      />
+                    ) : contentType === "Post" ? (
+                      <div>
+                        <label
+                          htmlFor="destination-url"
+                          className="field-label"
+                        >
+                          Destination URL
+                        </label>
+                        <input
+                          id="destination-url"
+                          type="url"
+                          required
+                          placeholder="https://example.com/your-work"
+                          value={targetUrl}
+                          onChange={(e) => setTargetUrl(e.target.value)}
+                          disabled={loading}
+                          className="field"
+                        />
+                        <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                          Use a full web address, including https://.
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <label
+                          htmlFor="destination-file"
+                          className="field-label"
+                        >
+                          Choose your file
+                        </label>
+                        <input
+                          id="destination-file"
+                          type="file"
+                          required
+                          disabled={loading}
+                          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                          className="field text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:font-medium"
+                        />
+                        <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                          Upload your finished document, image, or supported
+                          media file.
+                        </p>
+                      </div>
+                    )}
+                    <div className="mt-7 border-t border-border pt-6">
+                      <label htmlFor="publish-at" className="field-label">
+                        Publish at (optional, your local time)
+                      </label>
+                      <input
+                        id="publish-at"
+                        className="field mb-3"
+                        type="datetime-local"
+                        value={scheduledAt}
+                        onChange={(e) => setScheduledAt(e.target.value)}
+                        disabled={loading}
+                      />
+                      <p className="mb-4 text-xs">
+                        Leave empty to publish now. Scheduled work remains
+                        private until publication.
+                      </p>
+                      <Button type="submit" disabled={loading}>
+                        {loading
+                          ? "Saving destination…"
+                          : scheduledAt
+                            ? "Schedule publication"
+                            : data.mappedUrl
+                              ? "Update destination"
+                              : "Connect destination"}
+                        <ArrowUpRight size={15} />
+                      </Button>
+                      <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                        {scheduledAt
+                          ? "The current destination stays public until publication."
+                          : contentType === "Bundle"
+                            ? "Visitors will see a page with your published resources."
+                            : data.mappedUrl
+                              ? "This replaces the current destination for everyone with the link."
+                              : "Your holding page will redirect visitors once connected."}
+                      </p>
+                    </div>
+                  </fieldset>
+                </form>
+              )}
+              {tab === "destination" && (
+                <SchedulePanel link={data} onUpdated={() => fetchLink(slug!)} />
+              )}
+              {tab === "settings" && (
+                <HoldingPanel
+                  key={data.updatedAt}
+                  link={data}
+                  onUpdated={() => fetchLink(slug!)}
+                />
+              )}
+              {tab === "settings" && (
+                <PausePanel link={data} onUpdated={() => fetchLink(slug!)} />
+              )}
+              {tab === "settings" && (
+                <DeadlinePanel link={data} onUpdated={() => fetchLink(slug!)} />
+              )}
+              {tab === "settings" && (
+                <SharingPanel link={data} onUpdated={() => fetchLink(slug!)} />
+              )}
+              {tab === "history" && (
+                <HistoryPanel
+                  key={data.updatedAt}
+                  slug={data.slug}
+                  onUpdated={() => fetchLink(slug!)}
+                />
+              )}
+              {tab === "history" && (
+                <ActivityPanel
+                  key={`activity-${data.updatedAt}`}
+                  slug={data.slug}
+                />
+              )}
+              {tab === "insights" && <AnalyticsPanel slug={data.slug} />}
+              {tab === "insights" && (
+                <HealthPanel
+                  key={data.healthCheckedAt ?? data.updatedAt}
+                  link={data}
+                  onUpdated={() => fetchLink(slug!)}
+                />
+              )}
             </div>
-            <div className="space-y-5 p-5">
-              <div>
-                <h3 className="mb-2 text-xs font-medium tracking-normal">
-                  Public link
-                </h3>
-                <a
-                  href={publicUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="break-all font-mono text-[11px] leading-5 text-muted-foreground hover:text-foreground"
+            <aside className="panel overflow-hidden">
+              <div className="border-b border-border bg-muted px-5 py-4">
+                <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Link2 size={13} /> Link overview
+                </div>
+                <h2 className="break-words text-base font-medium">
+                  {data.displayTitle || "Untitled project"}
+                </h2>
+                <span
+                  className={`mt-3 ${data.mappedUrl ? "status-ready" : "status-pending"}`}
                 >
-                  {publicUrl}
-                </a>
+                  {data.mappedUrl ? (
+                    <Check size={11} />
+                  ) : (
+                    <span className="size-1.5 rounded-full bg-foreground" />
+                  )}
+                  {stateLabels[linkState(data)]}
+                </span>
               </div>
-              {data.mappedUrl && (
+              <div className="space-y-5 p-5">
                 <div>
                   <h3 className="mb-2 text-xs font-medium tracking-normal">
-                    Current destination
+                    Public link
                   </h3>
                   <a
-                    href={data.mappedUrl}
+                    href={publicUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="break-all text-xs leading-5 text-muted-foreground hover:text-foreground"
+                    className="break-all font-mono text-[11px] leading-5 text-muted-foreground hover:text-foreground"
                   >
-                    {data.mappedUrl}
+                    {publicUrl}
                   </a>
                 </div>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => copyLink(publicUrl)}
-              >
-                <Copy size={12} /> Copy public link
-              </Button>
-            </div>
-            <ExpiryPanel link={data} onUpdated={() => fetchLink(slug!)} />
-          </aside>
-        </div>
+                {data.mappedUrl && (
+                  <div>
+                    <h3 className="mb-2 text-xs font-medium tracking-normal">
+                      Current destination
+                    </h3>
+                    <a
+                      href={data.mappedUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="break-all text-xs leading-5 text-muted-foreground hover:text-foreground"
+                    >
+                      {data.mappedUrl}
+                    </a>
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => copyLink(publicUrl)}
+                >
+                  <Copy size={12} /> Copy public link
+                </Button>
+              </div>
+              <ExpiryPanel link={data} onUpdated={() => fetchLink(slug!)} />
+            </aside>
+          </div>
         </>
       )}
     </main>

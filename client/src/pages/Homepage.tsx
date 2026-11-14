@@ -39,7 +39,7 @@ const questions = [
   },
   {
     title: "Can I share a file instead of a website?",
-    text: "Yes. You can connect an existing URL or upload a supported file from your link’s management page.",
+    text: "Yes. Connect a website, upload a supported file, or publish a bundle with up to 12 labeled resources from your link’s management page.",
   },
   {
     title: "Who can change the destination?",
@@ -47,7 +47,7 @@ const questions = [
   },
   {
     title: "How long does a link stay available?",
-    text: "Links are currently valid for 30 days from creation. Create your link when you are ready to share, and connect your work within that window.",
+    text: "Links start with 30 days of validity. You can extend them from link settings, including renewing an expired link. Submission deadlines and scheduled publication are managed separately.",
   },
 ];
 
